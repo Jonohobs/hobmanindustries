@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hobman Industries — Patent Filing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0e14;
+    color: #c8d6e5;
+    font-family: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* Three.js canvas — fixed background */
+  #bg-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0;
+  }
+
+  /* Content overlay */
+  #overlay {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    padding: 60px 20px 30px;
+    background: linear-gradient(180deg, rgba(10,14,20,0.95) 0%, rgba(10,14,20,0.6) 70%, transparent 100%);
+  }
+
+  header h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(1.8rem, 5vw, 3.2rem);
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #e8f0ff;
+    margin-bottom: 4px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    position: relative;
+    display: inline-block;
+  }
+
+  header h1::before,
+  header h1::after {
+    content: '';
+    display: block;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(126,184,255,0.6), transparent);
+    margin: 8px auto;
+    width: 80%;
+  }
+
+  header h1 span {
+    font-weight: 900;
+    color: #7eb8ff;
+  }
+
+  header .subtitle {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(0.65rem, 1.3vw, 0.85rem);
+    color: #6a8cad;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+
+  header .filing-badge {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 6px 18px;
+    border: 1px solid rgba(126,184,255,0.3);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    color: #7eb8ff;
+    letter-spacing: 0.1em;
+    background: rgba(126,184,255,0.06);
+  }
+
+  /* Patent content panel */
+  .patent-panel {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 40px 30px 80px;
+  }
+
+  .patent-panel .patent-title {
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    font-weight: 400;
+    color: #e0ecff;
+    text-align: center;
+    line-height: 1.5;
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid rgba(126,184,255,0.15);
+  }
+
+  .patent-panel h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #7eb8ff;
+    margin: 40px 0 16px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-left: 3px solid rgba(126,184,255,0.4);
+    padding-left: 14px;
+  }
+
+  .patent-panel h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #a0c4e8;
+    margin: 30px 0 12px;
+  }
+
+  .patent-panel h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #8ab4d8;
+    margin: 24px 0 10px;
+  }
+
+  .patent-panel p {
+    font-size: 0.92rem;
+    line-height: 1.75;
+    margin-bottom: 14px;
+    color: #b0c4d8;
+    text-align: justify;
+  }
+
+  .patent-panel .claim {
+    background: rgba(126,184,255,0.04);
+    border: 1px solid rgba(126,184,255,0.08);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 12px 0;
+  }
+
+  .patent-panel .claim strong {
+    color: #7eb8ff;
+  }
+
+  .patent-panel .abstract {
+    background: rgba(126,184,255,0.06);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-bottom: 30px;
+    border: 1px solid rgba(126,184,255,0.1);
+  }
+
+  .patent-panel .abstract p {
+    color: #c8daea;
+    font-size: 0.93rem;
+  }
+
+  .patent-panel hr {
+    border: none;
+    border-top: 1px solid rgba(126,184,255,0.1);
+    margin: 30px 0;
+  }
+
+  .patent-panel ul, .patent-panel ol {
+    margin: 10px 0 14px 24px;
+    color: #b0c4d8;
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+
+  .patent-panel li {
+    margin-bottom: 6px;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    color: #4a6580;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    background: linear-gradient(0deg, rgba(10,14,20,0.95) 0%, transparent 100%);
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .patent-panel { padding: 20px 16px 60px; }
+    header { padding: 40px 16px 20px; }
+    .patent-panel .abstract { padding: 16px; }
+    .patent-panel .claim { padding: 12px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div id="overlay">
+  <header>
+    <h1>Hobman <span>Industries</span></h1>
+    <div class="subtitle">Research &amp; Development</div>
+    <div class="filing-badge">Patent Specification &mdash; Parker Commons Ltd</div>
+  </header>
+
+  <div class="patent-panel">
+    <div class="patent-title">
+      System and Method for Remote Object Manipulation and On-Demand Structure Fabrication via Magnetically Actuated High-Aspect-Ratio Filament Networks with Active Nodal Units and Deployable Membrane Surfaces
+    </div>
+
+    <div class="abstract">
+      <h2>Abstract</h2>
+      <p>A system for remote object manipulation using a network of high-aspect-ratio filaments under pre-tension, wherein magnetically loaded nodes are actuated by external electromagnetic field gradients to redistribute tension throughout the network, producing controlled displacement of objects without visible mechanical contact. The invention includes a closed-loop extrusion and thermal recycling device for on-demand filament creation and recovery; active nodal units providing illumination, sensing, actuation, computation, and reagent dispensing at positions along filaments; and deployable fluid membrane surfaces supported by filament scaffolds with controllable curing and property-modification capabilities. The combined system functions as a portable on-demand fabrication platform. Environmental safety features include biodegradable filament variants, human-imperceptible detection markers for stray filament recovery, and autonomous recovery agents.</p>
+    </div>
+
+    <h2>Field of the Invention</h2>
+    <p>This invention relates to systems and methods for remote mechanical actuation using networks of magnetically responsive high-aspect-ratio filaments. More specifically, it relates to distributed force transduction through pre-tensioned filament networks actuated by external electromagnetic field gradients; to devices for real-time extrusion and thermal recycling of such filaments; to active nodal units positioned along filaments for sensing, actuation, illumination, and reagent dispensing; and to deployable fluid membrane surfaces supported by filament scaffolds with controllable curing and property-modification capabilities.</p>
+
+    <hr />
+
+    <h2>Claims</h2>
+
+    <h3>Independent Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 1.</strong> A system for remote object manipulation comprising: (a) a network of high-aspect-ratio filaments under pre-tension, wherein at least a subset of nodes in said network are loaded with magnetically responsive material; (b) one or more electromagnetic field sources capable of generating spatially varying electromagnetic field gradients across said network; (c) wherein application of said field gradients causes differential forces on said magnetically loaded nodes, redistributing tension throughout the network topology, thereby producing net displacement of one or more objects attached to or resting upon the network.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 2.</strong> A device for on-demand extrusion and recycling of magnetically responsive high-aspect-ratio filaments, comprising: (a) an extrusion nozzle capable of producing continuous filaments from a feedstock material, wherein the filaments produced by said nozzle incorporate magnetically responsive particles; (b) a collection mechanism for retracting spent filaments; (c) a thermal decomposition chamber for converting spent filaments back into reusable feedstock; (d) a magnetic separation system for recovering catalyst and magnetic particles from decomposition products; (e) wherein the device operates as a closed-loop system, creating filaments on demand and recycling them after use.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 3.</strong> A method for closed-loop remote force application to an object, comprising: (a) deploying a network of magnetically responsive high-aspect-ratio filaments in a workspace; (b) establishing pre-tension in said network; (c) sensing the mechanical state of the network via piezoresistive, optical, or electrical measurements at one or more nodes or filaments; (d) computing actuation commands based on said sensed state and a desired force or displacement objective; (e) applying one or more electromagnetic field gradients to said network responsive to said actuation commands; (f) wherein steps (c) through (e) are repeated in a continuous feedback loop, enabling real-time adaptive control of object displacement.</p>
+    </div>
+
+    <h3>Dependent Claims &mdash; Specific Implementations</h3>
+
+    <div class="claim">
+      <p><strong>Claim 4.</strong> The system of Claim 1, wherein said high-aspect-ratio filaments comprise any of: carbon nanotubes, carbon nanotube fibres, carbon nanotube yarns, graphene nanoribbons, boron nitride nanotubes, polymer nanofibres, metallic nanowires, or hybrid composites thereof, at scales from nanometre to millimetre diameter.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 5.</strong> The system of Claim 1, wherein said magnetically responsive material comprises any of: iron nanoparticles, nickel nanoparticles, cobalt ferrite (CoFe&#x2082;O&#x2084;) nanoparticles, iron oxide (Fe&#x2083;O&#x2084;) nanoparticles, or other ferromagnetic or superparamagnetic nanoparticles.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 6.</strong> The system of Claim 1, wherein selective actuation of different network regions is achieved through any of: (a) spatial gradient selection; (b) frequency selection via different ferromagnetic resonance frequencies; (c) temporal multiplexing via rapid switching between field configurations.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 7.</strong> The system of Claim 1, wherein said network topology comprises any of: regular grid, radial (spider-web), tensegrity hybrid with discontinuous compression elements, or computationally optimised topologies.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 8.</strong> The device of Claim 2, wherein said extrusion nozzle produces filaments via wet-spinning from a solution of high-aspect-ratio material in a solvent, at or near ambient temperature.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 9.</strong> The device of Claim 2, wherein said thermal decomposition chamber operates under inert atmosphere at temperatures from 400&deg;C to 700&deg;C, converting spent filaments into recoverable carbon and catalyst particles via pyrolysis.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 10.</strong> The device of Claim 9, wherein said thermal decomposition chamber comprises a ceramic heating element enclosed in thermal insulation, and includes a sealed inert gas cartridge for maintaining decomposition atmosphere.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 11.</strong> The device of Claim 2, further comprising a magnetic separation system using permanent magnets or electromagnets to separate ferromagnetic catalyst particles from decomposed carbon feedstock.</p>
+    </div>
+
+    <h3>Deployment Variant Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 12.</strong> The system of Claim 1, wherein said network is deployed from a wearable device carried on a person's body, and wherein the electromagnetic field sources are integrated into or proximate to the wearable device.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 13.</strong> The system of Claim 1, wherein said network is deployed from one or more unmanned aerial vehicles (drones).</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 14.</strong> The system of Claim 1, wherein said network is deployed from fixed infrastructure for civic, architectural, or industrial applications.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 15.</strong> The system of Claim 1, wherein said network is deployed internally within a biological body for minimally invasive medical applications, with biocompatible and optionally biodegradable filaments.</p>
+    </div>
+
+    <h3>Safety Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 16.</strong> The system of Claim 1, further comprising a safety subsystem including any of: (a) automatic tension monitoring and retraction; (b) maximum force limiters; (c) emergency retraction mechanisms; (d) safe filament diameter and material selection; (e) real-time environmental sensing to detect persons or animals.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 17.</strong> The device of Claim 2, wherein filaments exist only during active use and are automatically retracted and recycled when not under active control.</p>
+    </div>
+
+    <h3>Sensing and Computing Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 18.</strong> The system of Claim 1, wherein said network additionally functions as a distributed sensor array, using piezoresistive properties to detect mechanical perturbations and provide feedback for closed-loop control.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 19.</strong> The system of Claim 1, wherein the nonlinear mechanical dynamics of the pre-tensioned filament network are exploited as a physical reservoir for computation, including perturbation classification, perturbation localisation, environmental field mapping, structural health monitoring, and reactive actuation computation &mdash; functioning as a passive fail-safe requiring no electrical power.</p>
+    </div>
+
+    <h3>Hybrid Actuation Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 20.</strong> The system of Claim 1, further comprising acoustic transducers providing a secondary actuation mode complementary to magnetic actuation.</p>
+    </div>
+
+    <h3>Defence and Humanitarian Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 21.</strong> The system of Claim 1, configured for non-lethal defensive applications including temporary barriers, gentle restraint, and projectile interception.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 22.</strong> The system of Claim 1, configured for humanitarian and assistive applications including soft exoskeletons, assistive manipulation, search and rescue, and disaster response.</p>
+    </div>
+
+    <h3>Arbitrary Origin and Anchor Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 23.</strong> The system of Claim 1 or Claim 2, wherein filaments may originate from, terminate at, or anchor to any arbitrary point including persons, natural or artificial surfaces, other filament networks, aerial platforms, or underwater structures.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 24.</strong> The system of Claim 1, wherein filaments are deployed from pre-loaded spool cartridges as an alternative to real-time extrusion.</p>
+    </div>
+
+    <h3>Human Flight and Personal Mobility Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 25.</strong> The system of Claim 1, configured for personal lift and mobility, enabling: (a) assisted jumping or falling; (b) sustained lift; (c) horizontal traversal; (d) load bearing; (e) with redundant safety systems ensuring controlled descent in the event of power loss or system failure.</p>
+    </div>
+
+    <h3>Entertainment and Display Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 26.</strong> The system of Claim 1, configured as an entertainment or demonstration system creating the visual effect of telekinesis, levitation, or other apparently physics-defying phenomena.</p>
+    </div>
+
+    <h3>Biological and Environmental Defence Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 27.</strong> The system of Claim 1, configured as a filtration or biological defence system with filament networks calibrated to intercept airborne particles, aerosols, and biological agents.</p>
+    </div>
+
+    <h3>Multi-Device and Networked System Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 28.</strong> A system comprising two or more systems according to previous claims, wherein multiple devices cooperate to deploy a shared filament network with coordinated electromagnetic field sources.</p>
+    </div>
+
+    <h3>Real-Time Closed-Loop Control Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 29.</strong> A method for real-time control of a magnetically actuated filament network with continuous sensing, stiffness modelling, electromagnetic field gradient planning, and adaptive feedback at sufficient control loop frequency for stable operation.</p>
+    </div>
+
+    <h3>Manufactured Article Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 30.</strong> A filament network article with predetermined topology, pre-tension, and spatially patterned magnetic loading encoding a force-transduction geometry.</p>
+    </div>
+
+    <h3>Electrostatic Actuation Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 31.</strong> The system of Claim 1, further comprising electrostatic field sources providing an actuation mode alternative or complementary to magnetic actuation.</p>
+    </div>
+
+    <h3>Active Nodal Unit Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 32.</strong> The system of Claim 1, further comprising active nodal units providing: (a) light emission; (b) mechanical actuation via MEMS or piezoelectric elements; (c) distributed sensing; (d) wireless communication; (e) computation; (f) reagent dispensing; (g) powered by energy harvesting, wireless transfer, or conducted power through the filament network.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 33.</strong> The system of Claim 32, wherein active nodal units are controllable individually or in coordinated groups producing emergent behaviours across the network.</p>
+    </div>
+
+    <h3>Deployable Membrane Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 34.</strong> The system of Claim 1, further comprising a fluid membrane deployment capability forming continuous membrane surfaces spanning the filament scaffold.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 35.</strong> The system of Claim 34, wherein said fluid material comprises a curable composition triggered by atmospheric oxygen, UV light, moisture, temperature change, or solvent evaporation.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 36.</strong> The system of Claim 34, wherein the membrane material changes physical properties in response to energy applied through the filament network (electrorheological stiffening, resistive heating, or electrochromic colour change).</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 37.</strong> The system of Claims 32 and 34, wherein active nodal units dispense reagents onto the membrane to trigger or modify chemical reactions.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 38.</strong> The system of Claim 34, wherein said membrane comprises strain-responsive materials including mechanophore-containing polymers, shear-thickening fluids, or piezoelectric films.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 39.</strong> The system of Claim 34, wherein the membrane is formed from two or more initially separated fluid components that react upon contact during deployment.</p>
+    </div>
+
+    <h3>Combined Fabrication Device Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 40.</strong> A portable on-demand fabrication device integrating filament extrusion/recycling, active nodal units, and membrane deployment into a single device capable of constructing and deconstructing three-dimensional structures on demand.</p>
+    </div>
+
+    <h3>Environmental Safety and Biodegradable Filament Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 41.</strong> The system of Claim 1, wherein filaments comprise biodegradable materials (silk fibroin, PLA, PCL, cellulose nanofibres, chitin, chitosan, or PHA) with controllable degradation rates and biocompatible nanoparticle encapsulation.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 42.</strong> The system of Claims 41 and 34, wherein biodegradable filaments and biodegradable membrane materials are used in combination for environmentally sensitive deployment.</p>
+    </div>
+
+    <h3>Filament Detection and Recovery Claims</h3>
+
+    <div class="claim">
+      <p><strong>Claim 43.</strong> The system of Claim 1, wherein detectable marker material is distributed along each filament during extrusion, imperceptible to human senses but detectable via magnetometer, near-infrared imaging, or terahertz imaging.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 44.</strong> The system of Claim 43, further comprising a filament recovery protocol with workspace scanning and inventory tracking.</p>
+    </div>
+
+    <div class="claim">
+      <p><strong>Claim 45.</strong> The system of Claim 43 or 44, further comprising autonomous recovery agents &mdash; mobile robots equipped with through-barrier detection systems (terahertz imaging, millimetre-wave radar, near-infrared cameras, magnetometers) and filament collection mechanisms for achieving verified zero-residue workspace clearance.</p>
+    </div>
+
+    <hr />
+
+    <h2>Specification</h2>
+
+    <h3>Background of the Invention</h3>
+    <p>The ability to exert mechanical force on objects at a distance &mdash; without visible physical contact &mdash; has long been a goal of engineering. Existing approaches to remote actuation include magnetic levitation, acoustic levitation, optical trapping, and robotic manipulation. Each has significant limitations: magnetic levitation requires ferromagnetic payloads; acoustic levitation is limited to small, lightweight objects; optical trapping works only at microscale; robotic manipulation requires visible mechanical linkages.</p>
+    <p>This invention describes a fundamentally different approach: using a network of near-invisible high-aspect-ratio filaments as a distributed force transduction medium. The network converts electromagnetic field gradients into mechanical work at arbitrary points in the workspace, without requiring the payload itself to be magnetic or otherwise responsive to electromagnetic fields. The filament network functions as an "invisible pulley system" &mdash; redistributing tension to move objects in response to remotely applied fields.</p>
+    <p>Furthermore, this invention extends the filament network concept to encompass active nodal units capable of independent sensing, actuation, illumination, and material dispensing; deployable fluid membranes that convert the filament scaffold into continuous surfaces with controllable properties; and a combined portable device that integrates all subsystems into an on-demand fabrication platform.</p>
+
+    <h3>Summary of the Invention</h3>
+    <p>The invention provides a system for remote object manipulation using a pre-tensioned network of high-aspect-ratio filaments with magnetically loaded nodes, actuated by external electromagnetic field gradients to redistribute tension and produce controlled object displacement. The invention further provides a closed-loop device for on-demand filament extrusion and thermal recycling; a real-time control method using piezoresistive sensing and adaptive feedback; active nodal units for distributed sensing, illumination, mechanical actuation, and reagent dispensing along filaments; deployable fluid membrane surfaces with controllable curing and property-modification; and a combined portable fabrication device integrating all subsystems. Environmental safety features include biodegradable filament variants, human-imperceptible detection markers distributed along the full filament length, and autonomous recovery agents for verified zero-residue workspace clearance.</p>
+
+    <h4>1. The Filament Network</h4>
+    <p>The core of the invention is a network of high-aspect-ratio filaments (aspect ratio exceeding 100:1) under pre-tension. In the preferred embodiment, these filaments are carbon nanotube (CNT) fibres, selected for their extraordinary mechanical properties (tensile strength up to 14 GPa, Young's modulus up to 1 TPa), low mass density, optical near-transparency at sub-micrometre thickness, and natural piezoresistive properties.</p>
+    <p>The network comprises: <strong>Filaments (edges)</strong> &mdash; high-aspect-ratio structures that transmit tension; <strong>Nodes (junctions)</strong> &mdash; points where filaments intersect and magnetically responsive material is deposited; <strong>Pre-tension</strong> &mdash; a baseline tension T&#x2080; ensuring all filaments are taut and capable of transmitting tension changes.</p>
+
+    <h4>2. Magnetic Loading and Selective Actuation</h4>
+    <p>Magnetically responsive material is deposited at specific nodes with controlled loading density. Three modes of selective control enable independent actuation: spatial gradient selection, frequency selection via different ferromagnetic resonance frequencies, and temporal multiplexing via rapid field switching.</p>
+
+    <h4>3. The Invisible Pulley Mechanism</h4>
+    <p>When an external field gradient is applied, each magnetised node experiences a force F = &nabla;(m &middot; B). This force is balanced by changes in tension throughout the connected network. The result is that a payload node experiences a net force from redistributed tensions &mdash; the "invisible pulley" effect. Mechanical advantage is determined by the ratio of actuated to payload nodes and the convergence geometry.</p>
+
+    <h4>4. On-Demand Filament Extrusion and Recycling</h4>
+    <p>A key aspect is a device for creating and destroying filaments on demand. The extrusion-recycling device comprises: an extrusion nozzle producing continuous magnetically-loaded filaments; a motorised collection mechanism; a thermal recycling chamber (400&ndash;700&deg;C under inert atmosphere); magnetic separation for recovering nanoparticles; and feedstock reconstitution. The complete cycle: <em>Extrude, Deploy, Use, Retract, Pyrolyse, Separate, Reconstitute, Extrude (repeating).</em></p>
+
+    <h4>5. Real-Time Closed-Loop Control</h4>
+    <p>The control system comprises: a sensing subsystem using piezoresistive properties of CNT filaments; a modelling subsystem (analytical, FEM, or learned); and an actuation planning subsystem with optimisation algorithms. The control loop operates at 10 Hz to 10 kHz depending on application requirements.</p>
+
+    <h4>6. Active Nodal Units</h4>
+    <p>Nodes may comprise active modules providing illumination (LED/OLED/electroluminescent), mechanical actuation (MEMS, piezoelectric, shape-memory), distributed sensing (optical, thermal, chemical, acoustic), communication and computation, and reagent dispensing. These transform the network from passive force transduction to an active, programmable, distributed system.</p>
+
+    <h4>7. Deployable Membrane Surfaces</h4>
+    <p>The filament network serves as a scaffold for fluid membrane surfaces. Membranes can be environmentally cured (oxygen, UV, moisture), electrically activated (electrorheological, resistive heating, electrochromic), reagent-activated, strain-responsive, or binary reactive. Applications include emergency parachutes, deployable walls, filtration surfaces, optical elements, and engineering substrates.</p>
+
+    <h4>8. Combined Portable Fabrication Device</h4>
+    <p>All subsystems integrate into a single portable device functioning as an on-demand fabrication platform: scaffold extrusion, node deployment, membrane application, surface activation, and functional activation. The process is reversible, enabling temporary structures to be completely removed.</p>
+
+    <h4>9. Biodegradable and Environmentally Safe Filaments</h4>
+    <p>Biodegradable alternatives include silk fibroin (up to 0.6 GPa), PLA, PCL, cellulose nanofibres (up to 0.3 GPa), and chitin/chitosan. Magnetic nanoparticles are encapsulated in biocompatible coatings. Degradation rates are engineered through polymer selection, molecular weight, and cross-linking density.</p>
+
+    <h4>10. Filament Detection and Autonomous Recovery</h4>
+    <p>Detection markers are distributed along filament lengths: terahertz absorption (penetrates non-metallic barriers), millimetre-wave radar, near-infrared fluorescent dyes, and magnetometer detection. Autonomous recovery agents &mdash; mobile robots with through-barrier detection &mdash; achieve verified zero-residue workspace clearance.</p>
+
+    <h4>11. Personal Mobility and Flight</h4>
+    <p>For an 80 kg person (~785 N), lift force is distributed across multiple nodes. At 45&deg; average filament angle, total tension must be ~1110 N, distributable across 200 nodes at ~5.5 N each or 1000 nodes at ~1.1 N each. Safety includes redundant networks, automatic controlled-descent protocols, and maximum acceleration limits.</p>
+
+  </div>
+
+  <footer>
+    &copy; 2026 Parker Commons Ltd &mdash; All Rights Reserved<br>
+    Patent Pending &mdash; UKIPO Filing
+  </footer>
+</div>
+
+<!-- Three.js -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+// --- Renderer ---
+const canvas = document.getElementById('bg-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.8;
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x0a0e14, 0.006);
+
+// --- Camera ---
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 500);
+camera.position.set(0, 2, 30);
+camera.lookAt(0, 0, 0);
+
+// --- Sky gradient ---
+const skyGeo = new THREE.SphereGeometry(200, 32, 32);
+const skyMat = new THREE.ShaderMaterial({
+  side: THREE.BackSide,
+  uniforms: {
+    topColor: { value: new THREE.Color(0x0a0e14) },
+    midColor: { value: new THREE.Color(0x0f1a2a) },
+    bottomColor: { value: new THREE.Color(0x1a2a4a) }
+  },
+  vertexShader: `
+    varying vec3 vWorldPos;
+    void main() {
+      vec4 wp = modelMatrix * vec4(position, 1.0);
+      vWorldPos = wp.xyz;
+      gl_Position = projectionMatrix * viewMatrix * wp;
+    }
+  `,
+  fragmentShader: `
+    uniform vec3 topColor;
+    uniform vec3 midColor;
+    uniform vec3 bottomColor;
+    varying vec3 vWorldPos;
+    void main() {
+      float h = normalize(vWorldPos).y;
+      vec3 col = mix(bottomColor, midColor, smoothstep(-0.1, 0.2, h));
+      col = mix(col, topColor, smoothstep(0.2, 0.8, h));
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `
+});
+scene.add(new THREE.Mesh(skyGeo, skyMat));
+
+// --- Stars ---
+const starCount = 800;
+const starGeo = new THREE.BufferGeometry();
+const starPos = new Float32Array(starCount * 3);
+const starSizes = new Float32Array(starCount);
+for (let i = 0; i < starCount; i++) {
+  const theta = Math.random() * Math.PI * 2;
+  const phi = Math.acos(Math.random() * 0.7 + 0.3); // upper hemisphere bias
+  const r = 150 + Math.random() * 40;
+  starPos[i*3] = r * Math.sin(phi) * Math.cos(theta);
+  starPos[i*3+1] = r * Math.cos(phi);
+  starPos[i*3+2] = r * Math.sin(phi) * Math.sin(theta);
+  starSizes[i] = 0.5 + Math.random() * 1.5;
+}
+starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+starGeo.setAttribute('size', new THREE.BufferAttribute(starSizes, 1));
+const starMat = new THREE.PointsMaterial({
+  color: 0x8899cc,
+  size: 0.8,
+  sizeAttenuation: true,
+  transparent: true,
+  opacity: 0.6
+});
+scene.add(new THREE.Points(starGeo, starMat));
+
+// --- Lighting ---
+const ambientLight = new THREE.AmbientLight(0x2a3a5a, 1.2);
+scene.add(ambientLight);
+
+const moonLight = new THREE.DirectionalLight(0x6688cc, 2.0);
+moonLight.position.set(30, 50, -20);
+scene.add(moonLight);
+
+const rimLight = new THREE.DirectionalLight(0x223355, 0.5);
+rimLight.position.set(-20, 10, 30);
+scene.add(rimLight);
+
+// --- Build Blimp ---
+function createBlimp() {
+  const group = new THREE.Group();
+
+  // Hull — elongated ellipsoid
+  const hullGeo = new THREE.SphereGeometry(1, 32, 24);
+  hullGeo.scale(3.5, 1, 1);
+  const hullMat = new THREE.MeshPhysicalMaterial({
+    color: 0x1a2a3a,
+    metalness: 0.7,
+    roughness: 0.3,
+    clearcoat: 0.4,
+    clearcoatRoughness: 0.2,
+    envMapIntensity: 0.5
+  });
+  const hull = new THREE.Mesh(hullGeo, hullMat);
+  group.add(hull);
+
+  // Accent stripe
+  const stripeGeo = new THREE.TorusGeometry(1.01, 0.03, 8, 64);
+  stripeGeo.scale(3.5, 1, 1);
+  const stripeMat = new THREE.MeshBasicMaterial({ color: 0x4488cc, transparent: true, opacity: 0.6 });
+  const stripe = new THREE.Mesh(stripeGeo, stripeMat);
+  stripe.rotation.y = Math.PI / 2;
+  group.add(stripe);
+
+  // Gondola
+  const gondolaGeo = new THREE.BoxGeometry(1.8, 0.3, 0.5);
+  const gondolaMat = new THREE.MeshPhysicalMaterial({
+    color: 0x0f1a28,
+    metalness: 0.8,
+    roughness: 0.2
+  });
+  const gondola = new THREE.Mesh(gondolaGeo, gondolaMat);
+  gondola.position.set(0, -1.15, 0);
+  group.add(gondola);
+
+  // Gondola windows (emissive)
+  for (let i = -3; i <= 3; i++) {
+    const winGeo = new THREE.BoxGeometry(0.12, 0.08, 0.52);
+    const winMat = new THREE.MeshBasicMaterial({
+      color: 0x66aaff,
+      transparent: true,
+      opacity: 0.8
+    });
+    const win = new THREE.Mesh(winGeo, winMat);
+    win.position.set(i * 0.22, -1.1, 0);
+    group.add(win);
+  }
+
+  // Struts connecting hull to gondola
+  for (let i = -1; i <= 1; i += 2) {
+    const strutGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.6, 6);
+    const strutMat = new THREE.MeshBasicMaterial({ color: 0x334455 });
+    const strut = new THREE.Mesh(strutGeo, strutMat);
+    strut.position.set(i * 0.5, -0.85, 0);
+    strut.rotation.z = i * 0.15;
+    group.add(strut);
+  }
+
+  // Tail fins — 4 fins in cross pattern
+  const finShape = new THREE.Shape();
+  finShape.moveTo(0, 0);
+  finShape.lineTo(-0.8, 0.6);
+  finShape.lineTo(-1.0, 0.5);
+  finShape.lineTo(-0.3, 0);
+  finShape.lineTo(-1.0, -0.5);
+  finShape.lineTo(-0.8, -0.6);
+  finShape.closePath();
+
+  const finGeo = new THREE.ShapeGeometry(finShape);
+  const finMat = new THREE.MeshPhysicalMaterial({
+    color: 0x1a2a3a,
+    metalness: 0.6,
+    roughness: 0.4,
+    side: THREE.DoubleSide
+  });
+
+  // Vertical fins
+  const finV1 = new THREE.Mesh(finGeo, finMat);
+  finV1.position.set(-3.2, 0, 0);
+  group.add(finV1);
+
+  // Horizontal fins
+  const finH1 = new THREE.Mesh(finGeo.clone(), finMat);
+  finH1.position.set(-3.2, 0, 0);
+  finH1.rotation.x = Math.PI / 2;
+  group.add(finH1);
+
+  // Engine pods
+  for (let side of [-1, 1]) {
+    const podGeo = new THREE.CylinderGeometry(0.12, 0.15, 0.5, 8);
+    const podMat = new THREE.MeshPhysicalMaterial({
+      color: 0x0f1a28,
+      metalness: 0.9,
+      roughness: 0.1
+    });
+    const pod = new THREE.Mesh(podGeo, podMat);
+    pod.position.set(-1.5, -0.8, side * 0.7);
+    pod.rotation.x = Math.PI / 2;
+    group.add(pod);
+
+    // Engine glow
+    const glowGeo = new THREE.CircleGeometry(0.1, 12);
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: 0x4488ff,
+      transparent: true,
+      opacity: 0.7
+    });
+    const glow = new THREE.Mesh(glowGeo, glowMat);
+    glow.position.set(-1.5, -0.8, side * 0.7 + side * 0.26);
+    group.add(glow);
+  }
+
+  // Nose light
+  const noseGeo = new THREE.SphereGeometry(0.06, 8, 8);
+  const noseMat = new THREE.MeshBasicMaterial({ color: 0xff4444 });
+  const nose = new THREE.Mesh(noseGeo, noseMat);
+  nose.position.set(3.5, 0, 0);
+  group.add(nose);
+
+  // Nose point light
+  const noseLight = new THREE.PointLight(0xff4444, 0.5, 5);
+  noseLight.position.set(3.6, 0, 0);
+  group.add(noseLight);
+
+  return group;
+}
+
+// Main blimp
+const blimp = createBlimp();
+blimp.scale.setScalar(1.8);
+blimp.position.set(5, 3, -8);
+scene.add(blimp);
+
+// Distant blimp
+const blimp2 = createBlimp();
+blimp2.scale.setScalar(0.8);
+blimp2.position.set(-25, 8, -40);
+blimp2.rotation.y = 0.3;
+scene.add(blimp2);
+
+// Another distant blimp
+const blimp3 = createBlimp();
+blimp3.scale.setScalar(0.5);
+blimp3.position.set(30, 12, -55);
+blimp3.rotation.y = -0.5;
+scene.add(blimp3);
+
+// --- Particles (dust/atmosphere) ---
+const particleCount = 300;
+const particleGeo = new THREE.BufferGeometry();
+const particlePositions = new Float32Array(particleCount * 3);
+const particleSpeeds = [];
+for (let i = 0; i < particleCount; i++) {
+  particlePositions[i*3] = (Math.random() - 0.5) * 80;
+  particlePositions[i*3+1] = (Math.random() - 0.5) * 40;
+  particlePositions[i*3+2] = (Math.random() - 0.5) * 60 - 10;
+  particleSpeeds.push(0.002 + Math.random() * 0.008);
+}
+particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+const particleMat = new THREE.PointsMaterial({
+  color: 0x4466aa,
+  size: 0.15,
+  transparent: true,
+  opacity: 0.3,
+  sizeAttenuation: true
+});
+const particles = new THREE.Points(particleGeo, particleMat);
+scene.add(particles);
+
+// --- Animate ---
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+
+  // Blimp 1 — gentle drift and bob
+  blimp.position.x = 5 + Math.sin(t * 0.08) * 3;
+  blimp.position.y = 3 + Math.sin(t * 0.15) * 0.5;
+  blimp.rotation.y = Math.sin(t * 0.05) * 0.08;
+  blimp.rotation.z = Math.sin(t * 0.12) * 0.02;
+
+  // Blimp 2 — slow patrol
+  blimp2.position.x = -25 + Math.sin(t * 0.04 + 2) * 8;
+  blimp2.position.y = 8 + Math.sin(t * 0.1 + 1) * 0.8;
+  blimp2.rotation.y = 0.3 + Math.sin(t * 0.03) * 0.1;
+
+  // Blimp 3 — distant drift
+  blimp3.position.x = 30 + Math.sin(t * 0.03 + 4) * 5;
+  blimp3.position.y = 12 + Math.sin(t * 0.08 + 3) * 0.4;
+
+  // Particles drift
+  const pos = particles.geometry.attributes.position.array;
+  for (let i = 0; i < particleCount; i++) {
+    pos[i*3] += particleSpeeds[i];
+    pos[i*3+1] += Math.sin(t + i) * 0.001;
+    if (pos[i*3] > 40) pos[i*3] = -40;
+  }
+  particles.geometry.attributes.position.needsUpdate = true;
+
+  // Star twinkle
+  starMat.opacity = 0.4 + Math.sin(t * 0.5) * 0.15;
+
+  // Camera subtle parallax based on scroll
+  const scrollY = window.scrollY || 0;
+  camera.position.y = 2 - scrollY * 0.003;
+  camera.lookAt(0, -scrollY * 0.002, 0);
+
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// --- Resize ---
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+
+</body>
+</html>
