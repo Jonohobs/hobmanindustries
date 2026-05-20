@@ -6,30 +6,45 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Listen</title>
 <style>
-  :root { color-scheme: dark; }
-  * { box-sizing: border-box; }
-  body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-         font: 16px/1.5 system-ui, sans-serif; background: #0c0c10; color: #e8e8ec; padding: 24px; }
-  main { width: 100%; max-width: 560px; }
-  h1 { font-size: 1.25rem; font-weight: 500; margin: 0 0 1rem; color: #b0b0bc; }
+  :root { color-scheme: dark; --fg: #e8e8ec; --bg: #0c0c10; --panel: #16161c; --line: #2a2a36; --muted: #80808c; --accent: #a8b2ff; --active: #1e2240; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; min-height: 100vh; font: 16px/1.5 system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); padding: 24px 16px; padding-bottom: 140px; }
+  main { width: 100%; max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 1.1rem; font-weight: 500; margin: 0 0 1rem; color: var(--muted); letter-spacing: 0.02em; }
   form { display: flex; gap: 8px; }
-  input[type=password] { flex: 1; padding: 12px 14px; font-size: 1rem; background: #16161c;
-         border: 1px solid #2a2a36; border-radius: 8px; color: inherit; }
-  button { padding: 12px 18px; font-size: 1rem; background: #2a2a36; border: none; border-radius: 8px;
-         color: inherit; cursor: pointer; }
+  input[type=password] { flex: 1; padding: 14px 16px; font-size: 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; color: inherit; }
+  button { padding: 14px 18px; font-size: 1rem; background: var(--line); border: none; border-radius: 10px; color: inherit; cursor: pointer; font-family: inherit; }
   button:hover { background: #353548; }
   #err { color: #d97070; margin-top: 12px; min-height: 1.2em; }
-  .track { margin: 18px 0; padding: 14px; background: #16161c; border-radius: 10px; }
-  .track h2 { font-size: 0.95rem; font-weight: 500; margin: 0 0 8px; color: #b0b0bc; }
-  audio { width: 100%; }
   #players { display: none; }
   #players.show { display: block; }
   #gate.hide { display: none; }
+
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .toolbar .count { color: var(--muted); font-size: 0.85rem; }
+  .toolbar .refresh { background: transparent; padding: 6px 10px; font-size: 0.85rem; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; }
+  .toolbar .refresh:hover { color: var(--fg); }
+
+  ul.chapters { list-style: none; padding: 0; margin: 0; }
+  ul.chapters li { padding: 14px 14px; background: var(--panel); border-radius: 10px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: baseline; gap: 12px; }
+  ul.chapters li:hover { background: #1c1c24; }
+  ul.chapters li.active { background: var(--active); }
+  .ch-num { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 0.85rem; min-width: 2em; }
+  .ch-title { flex: 1; font-size: 0.98rem; }
+  .ch-dur { color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+
+  #empty { color: var(--muted); padding: 24px 0; text-align: center; }
+
+  /* Sticky player at the bottom */
+  #bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--panel); border-top: 1px solid var(--line); padding: 12px 16px env(safe-area-inset-bottom, 12px); display: none; }
+  #bar.show { display: block; }
+  #bar .now { font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  audio { width: 100%; }
 </style>
 </head>
 <body>
 <main>
-  <h1>Audiobook samples</h1>
+  <h1>Hobman Industries — Listen</h1>
 
   <div id="gate">
     <form id="f">
@@ -40,37 +55,99 @@
   </div>
 
   <div id="players">
-    <div class="track"><h2>af_heart &mdash; American female, warm</h2><audio controls preload="none" data-voice="af_heart"></audio></div>
-    <div class="track"><h2>bm_george &mdash; British male, narrator-y</h2><audio controls preload="none" data-voice="bm_george"></audio></div>
-    <div class="track"><h2>am_michael &mdash; American male, neutral</h2><audio controls preload="none" data-voice="am_michael"></audio></div>
+    <div class="toolbar">
+      <span class="count" id="count">…</span>
+      <button class="refresh" id="refresh" title="check for new chapters">refresh</button>
+    </div>
+    <ul class="chapters" id="list"></ul>
+    <div id="empty" style="display:none">No chapters yet. Pull to refresh.</div>
   </div>
 </main>
 
+<div id="bar">
+  <div class="now" id="now">—</div>
+  <audio id="audio" controls preload="none"></audio>
+</div>
+
 <script>
+let TOKEN = null;
+let CHAPTERS = [];
+let CURRENT = -1;
+
+const $ = (id) => document.getElementById(id);
+
 async function tokenFor(pw) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
   return Array.from(new Uint8Array(buf)).slice(0, 6).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+function fmt(sec) {
+  if (!sec || !isFinite(sec)) return '';
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+async function loadManifest() {
+  const r = await fetch(`${TOKEN}/manifest.json`, { cache: 'no-store' });
+  if (!r.ok) throw new Error('manifest fetch failed');
+  const data = await r.json();
+  CHAPTERS = data.chapters || [];
+  renderList();
+}
+
+function renderList() {
+  const list = $('list');
+  list.innerHTML = '';
+  $('count').textContent = `${CHAPTERS.length} ${CHAPTERS.length === 1 ? 'chapter' : 'chapters'}`;
+  $('empty').style.display = CHAPTERS.length ? 'none' : 'block';
+  CHAPTERS.forEach((ch, i) => {
+    const li = document.createElement('li');
+    if (i === CURRENT) li.classList.add('active');
+    li.innerHTML = `<span class="ch-num">${String(i).padStart(2, '0')}</span><span class="ch-title"></span><span class="ch-dur">${fmt(ch.duration)}</span>`;
+    li.querySelector('.ch-title').textContent = ch.title;
+    li.addEventListener('click', () => play(i));
+    list.appendChild(li);
+  });
+}
+
+function play(i) {
+  if (i < 0 || i >= CHAPTERS.length) return;
+  CURRENT = i;
+  const ch = CHAPTERS[i];
+  const audio = $('audio');
+  audio.src = `${TOKEN}/${ch.file}`;
+  audio.play().catch(() => {});
+  $('bar').classList.add('show');
+  $('now').textContent = `${String(i).padStart(2,'0')}  ${ch.title}`;
+  try { sessionStorage.setItem('current', String(i)); } catch (e) {}
+  renderList();
+}
+
+$('audio').addEventListener('ended', () => {
+  if (CURRENT + 1 < CHAPTERS.length) play(CURRENT + 1);
+});
+
+$('refresh').addEventListener('click', () => loadManifest());
+
 async function tryUnlock(pw) {
   const token = await tokenFor(pw);
-  const probe = await fetch(`${token}/af_heart.mp3`, { method: 'HEAD' });
+  const probe = await fetch(`${token}/manifest.json`, { method: 'HEAD', cache: 'no-store' });
   if (!probe.ok) return false;
-  for (const a of document.querySelectorAll('audio[data-voice]')) {
-    a.src = `${token}/${a.dataset.voice}.mp3`;
-  }
-  document.getElementById('gate').classList.add('hide');
-  document.getElementById('players').classList.add('show');
+  TOKEN = token;
+  await loadManifest();
+  $('gate').classList.add('hide');
+  $('players').classList.add('show');
   try { sessionStorage.setItem('pw', pw); } catch (e) {}
   return true;
 }
 
-document.getElementById('f').addEventListener('submit', async (e) => {
+$('f').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const pw = document.getElementById('pw').value;
-  document.getElementById('err').textContent = '';
+  const pw = $('pw').value;
+  $('err').textContent = '';
   const ok = await tryUnlock(pw);
-  if (!ok) document.getElementById('err').textContent = 'Nope.';
+  if (!ok) $('err').textContent = 'Nope.';
 });
 
 (async () => {
