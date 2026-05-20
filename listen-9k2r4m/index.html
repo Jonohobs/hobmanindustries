@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Listen</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+         font: 16px/1.5 system-ui, sans-serif; background: #0c0c10; color: #e8e8ec; padding: 24px; }
+  main { width: 100%; max-width: 560px; }
+  h1 { font-size: 1.25rem; font-weight: 500; margin: 0 0 1rem; color: #b0b0bc; }
+  form { display: flex; gap: 8px; }
+  input[type=password] { flex: 1; padding: 12px 14px; font-size: 1rem; background: #16161c;
+         border: 1px solid #2a2a36; border-radius: 8px; color: inherit; }
+  button { padding: 12px 18px; font-size: 1rem; background: #2a2a36; border: none; border-radius: 8px;
+         color: inherit; cursor: pointer; }
+  button:hover { background: #353548; }
+  #err { color: #d97070; margin-top: 12px; min-height: 1.2em; }
+  .track { margin: 18px 0; padding: 14px; background: #16161c; border-radius: 10px; }
+  .track h2 { font-size: 0.95rem; font-weight: 500; margin: 0 0 8px; color: #b0b0bc; }
+  audio { width: 100%; }
+  #players { display: none; }
+  #players.show { display: block; }
+  #gate.hide { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Audiobook samples</h1>
+
+  <div id="gate">
+    <form id="f">
+      <input id="pw" type="password" autocomplete="off" placeholder="password" autofocus>
+      <button type="submit">Listen</button>
+    </form>
+    <div id="err"></div>
+  </div>
+
+  <div id="players">
+    <div class="track"><h2>af_heart &mdash; American female, warm</h2><audio controls preload="none" data-voice="af_heart"></audio></div>
+    <div class="track"><h2>bm_george &mdash; British male, narrator-y</h2><audio controls preload="none" data-voice="bm_george"></audio></div>
+    <div class="track"><h2>am_michael &mdash; American male, neutral</h2><audio controls preload="none" data-voice="am_michael"></audio></div>
+  </div>
+</main>
+
+<script>
+async function tokenFor(pw) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  return Array.from(new Uint8Array(buf)).slice(0, 6).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function tryUnlock(pw) {
+  const token = await tokenFor(pw);
+  const probe = await fetch(`${token}/af_heart.mp3`, { method: 'HEAD' });
+  if (!probe.ok) return false;
+  for (const a of document.querySelectorAll('audio[data-voice]')) {
+    a.src = `${token}/${a.dataset.voice}.mp3`;
+  }
+  document.getElementById('gate').classList.add('hide');
+  document.getElementById('players').classList.add('show');
+  try { sessionStorage.setItem('pw', pw); } catch (e) {}
+  return true;
+}
+
+document.getElementById('f').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const pw = document.getElementById('pw').value;
+  document.getElementById('err').textContent = '';
+  const ok = await tryUnlock(pw);
+  if (!ok) document.getElementById('err').textContent = 'Nope.';
+});
+
+(async () => {
+  const cached = sessionStorage.getItem('pw');
+  if (cached) await tryUnlock(cached);
+})();
+</script>
+</body>
+</html>
