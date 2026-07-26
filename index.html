@@ -199,6 +199,108 @@
     .patent-panel .abstract { padding: 16px; }
     .patent-panel .claim { padding: 12px 14px; }
   }
+
+  /* Interactive simulation */
+  .sim-section {
+    max-width: 820px;
+    margin: 10px auto 0;
+    padding: 0 30px;
+  }
+  .sim-section h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #7eb8ff;
+    margin: 20px 0 6px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-left: 3px solid rgba(126,184,255,0.4);
+    padding-left: 14px;
+  }
+  .sim-section .sim-sub {
+    font-size: 0.85rem;
+    color: #6a8cad;
+    margin: 0 0 16px 17px;
+    letter-spacing: 0.02em;
+    line-height: 1.6;
+  }
+  .flight-demo-launch {
+    display: flex; align-items: center; justify-content: space-between; gap: 18px;
+    margin: 0 0 18px; padding: 16px 18px;
+    border: 1px solid rgba(126,184,255,0.25); border-radius: 10px;
+    background: linear-gradient(110deg, rgba(126,184,255,0.11), rgba(7,16,25,0.76));
+    color: #d9ecff; text-decoration: none;
+    transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+  }
+  .flight-demo-launch:hover, .flight-demo-launch:focus-visible {
+    border-color: rgba(126,184,255,0.68); transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0,20,50,.35); outline: none;
+  }
+  .flight-demo-launch strong {
+    display: block; font-family: 'Orbitron', sans-serif; font-size: .78rem;
+    color: #9dceff; letter-spacing: .1em; text-transform: uppercase;
+  }
+  .flight-demo-launch span { display: block; margin-top: 5px; color: #8faac5; font-size: .78rem; }
+  .flight-demo-launch b {
+    flex: none; color: #d9f2ff; font-family: 'Orbitron', sans-serif;
+    font-size: .68rem; letter-spacing: .12em; white-space: nowrap;
+  }
+  .sim-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border: 1px solid rgba(126,184,255,0.18);
+    border-radius: 12px;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 50% 32%, #0d1626 0%, #06090f 100%);
+    box-shadow: inset 0 0 60px rgba(126,184,255,0.05);
+    touch-action: none;
+  }
+  #sim-canvas { display: block; width: 100%; height: 100%; }
+  .sim-controls {
+    position: absolute; left: 14px; bottom: 14px; right: 14px;
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center; z-index: 2;
+  }
+  .sim-btn {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: #a8c8ee; background: rgba(15,26,40,0.72); cursor: pointer;
+    border: 1px solid rgba(126,184,255,0.25); border-radius: 6px;
+    padding: 7px 12px; backdrop-filter: blur(6px); transition: all .15s ease;
+  }
+  .sim-btn:hover { border-color: rgba(126,184,255,0.6); color: #e8f0ff; }
+  .sim-btn.active {
+    background: rgba(126,184,255,0.18); color: #e8f0ff;
+    border-color: rgba(126,184,255,0.7); box-shadow: 0 0 12px rgba(126,184,255,0.25);
+  }
+  .sim-field { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  .sim-field label {
+    font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: #6a8cad; font-family: 'Orbitron', sans-serif;
+  }
+  .sim-field input[type=range] { width: 120px; accent-color: #7eb8ff; cursor: pointer; }
+  .sim-legend {
+    position: absolute; top: 12px; left: 14px; z-index: 2;
+    font-size: 0.66rem; color: #8ab0d8; line-height: 1.8; letter-spacing: 0.02em;
+    background: rgba(6,9,15,0.42); padding: 8px 11px; border-radius: 8px;
+    border: 1px solid rgba(126,184,255,0.1); backdrop-filter: blur(3px);
+  }
+  .sim-legend .dot {
+    display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+    margin-right: 7px; vertical-align: middle;
+  }
+  .sim-hint {
+    position: absolute; top: 14px; right: 14px; z-index: 2;
+    font-size: 0.58rem; color: #4a6580; letter-spacing: 0.1em;
+    text-transform: uppercase; font-family: 'Orbitron', sans-serif;
+  }
+  @media (max-width: 600px) {
+    .sim-section { padding: 0 16px; }
+    .sim-wrap { aspect-ratio: 3 / 4; }
+    .sim-field input[type=range] { width: 78px; }
+    .sim-legend { font-size: 0.58rem; }
+    .flight-demo-launch { align-items: flex-start; padding: 14px; }
+    .flight-demo-launch b { padding-top: 2px; }
+  }
 </style>
 </head>
 <body>
@@ -212,6 +314,35 @@
     <div class="filing-badge">Patent Specification &mdash; Parker Commons Ltd</div>
   </header>
 
+  <!-- Primary interactive launch surface: deliberately above the patent text. -->
+  <section class="sim-section" id="sim">
+    <h2>Interactive Demonstration</h2>
+    <p class="sim-sub">The invisible pulley &mdash; a pre-tensioned filament network whose magnetically loaded nodes are pulled by an external field gradient, redistributing tension to lift a payload without visible contact.</p>
+    <a class="flight-demo-launch" href="./flight-demo/">
+      <span><strong>Flight + vector-drone pulley simulator</strong><span>Fly beneath load-bearing blimps, hook cargo into the visible three-point pulley web, and test the automatic fall-arrest system. Touch controls included.</span></span>
+      <b>Launch &rarr;</b>
+    </a>
+    <div class="sim-wrap">
+      <canvas id="sim-canvas"></canvas>
+      <div class="sim-legend">
+        <div><span class="dot" style="background:#7ef0ff"></span>Filament tension</div>
+        <div><span class="dot" style="background:#ff7edb"></span>Magnetic node</div>
+        <div><span class="dot" style="background:#ffb45a"></span>Field emitter</div>
+      </div>
+      <div class="sim-hint">drag to orbit</div>
+      <div class="sim-controls">
+        <button class="sim-btn active" data-mode="telekinesis">Telekinesis</button>
+        <button class="sim-btn" data-mode="flight">Flight</button>
+        <button class="sim-btn" id="sim-power">Field: On</button>
+        <div class="sim-field">
+          <label>Field</label>
+          <input type="range" id="sim-strength" min="0" max="100" value="60" aria-label="Field strength">
+        </div>
+      </div>
+    </div>
+    <p class="sim-sub" style="margin-top:10px; font-size:0.76rem; color:#4a6580;">Illustrative real-time mass-spring simulation (position-based dynamics) of the mechanism described in Claims 1, 25 and 26 &mdash; for explanatory purposes; not engineering data.</p>
+  </section>
+
   <div class="patent-panel">
     <div class="patent-title">
       System and Method for Remote Object Manipulation and On-Demand Structure Fabrication via Magnetically Actuated High-Aspect-Ratio Filament Networks with Active Nodal Units and Deployable Membrane Surfaces
@@ -221,6 +352,7 @@
       <h2>Abstract</h2>
       <p>A system for remote object manipulation using a network of high-aspect-ratio filaments under pre-tension, wherein magnetically loaded nodes are actuated by external electromagnetic field gradients to redistribute tension throughout the network, producing controlled displacement of objects without visible mechanical contact. The invention includes a closed-loop extrusion and thermal recycling device for on-demand filament creation and recovery; active nodal units providing illumination, sensing, actuation, computation, and reagent dispensing at positions along filaments; and deployable fluid membrane surfaces supported by filament scaffolds with controllable curing and property-modification capabilities. The combined system functions as a portable on-demand fabrication platform. Environmental safety features include biodegradable filament variants, human-imperceptible detection markers for stray filament recovery, and autonomous recovery agents.</p>
     </div>
+
 
     <h2>Field of the Invention</h2>
     <p>This invention relates to systems and methods for remote mechanical actuation using networks of magnetically responsive high-aspect-ratio filaments. More specifically, it relates to distributed force transduction through pre-tensioned filament networks actuated by external electromagnetic field gradients; to devices for real-time extrusion and thermal recycling of such filaments; to active nodal units positioned along filaments for sensing, actuation, illumination, and reagent dispensing; and to deployable fluid membrane surfaces supported by filament scaffolds with controllable curing and property-modification capabilities.</p>
@@ -821,6 +953,261 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+</script>
+
+<!-- Patent mechanism simulation: the "invisible pulley" -->
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const canvas = document.getElementById('sim-canvas');
+if (canvas) {
+  const wrap = canvas.parentElement;
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x06090f, 0.018);
+
+  const camera = new THREE.PerspectiveCamera(48, 1.6, 0.1, 200);
+  camera.position.set(0, 2.5, 17);
+
+  const controls = new OrbitControls(camera, canvas);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 9;
+  controls.maxDistance = 34;
+  controls.maxPolarAngle = Math.PI * 0.95;
+  controls.target.set(0, 0.5, 0);
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = 0.45;
+  controls.addEventListener('start', () => { controls.autoRotate = false; });
+
+  // Lighting
+  scene.add(new THREE.AmbientLight(0x3a4a6a, 1.3));
+  const key = new THREE.DirectionalLight(0x88aaff, 1.7); key.position.set(6, 12, 8); scene.add(key);
+  const rim = new THREE.DirectionalLight(0x4466aa, 0.7); rim.position.set(-8, 3, -7); scene.add(rim);
+
+  // Ground reference ring
+  const groundRing = new THREE.Mesh(
+    new THREE.RingGeometry(5.4, 5.9, 80),
+    new THREE.MeshBasicMaterial({ color: 0x1c3a5a, transparent: true, opacity: 0.22, side: THREE.DoubleSide })
+  );
+  groundRing.rotation.x = -Math.PI / 2; groundRing.position.y = -4.2; scene.add(groundRing);
+
+  // --- Network: radial "orb-web" canopy, outer ring anchored ---
+  const SPOKES = 18, RINGS = 6, yTop = 4.5;
+  const radiusAt = r => 1.0 + (6.0 - 1.0) * (r / (RINGS - 1));
+
+  const nodes = [];
+  const idx = (s, r) => (s % SPOKES) * RINGS + r;
+  for (let s = 0; s < SPOKES; s++) {
+    const a = (s / SPOKES) * Math.PI * 2;
+    for (let r = 0; r < RINGS; r++) {
+      const rad = radiusAt(r);
+      const p = new THREE.Vector3(Math.cos(a) * rad, yTop, Math.sin(a) * rad);
+      const pinned = (r === RINGS - 1);
+      nodes.push({
+        pos: p.clone(), prev: p.clone(), anchor: p.clone(),
+        invMass: pinned ? 0 : 1, pinned,
+        magnetic: (r >= 2 && r <= 4)
+      });
+    }
+  }
+  // Heavy payload node, hangs below the hub
+  const payload = { pos: new THREE.Vector3(0, -1.6, 0), prev: new THREE.Vector3(0, -1.6, 0), anchor: null, invMass: 0.22, pinned: false, magnetic: false };
+  const PAYLOAD = nodes.length; nodes.push(payload);
+
+  // --- Constraints (distance constraints; rest length 0.97x => pre-tension) ---
+  const constraints = [];
+  const addC = (ia, ib, factor = 0.97) => {
+    constraints.push({ a: ia, b: ib, rest: nodes[ia].pos.distanceTo(nodes[ib].pos) * factor });
+  };
+  for (let s = 0; s < SPOKES; s++) {
+    for (let r = 0; r < RINGS - 1; r++) addC(idx(s, r), idx(s, r + 1)); // radial spokes
+    for (let r = 0; r < RINGS; r++) addC(idx(s, r), idx(s + 1, r));      // circumferential rings
+  }
+  // Harness: payload connected to every hub node -> load distributed across SPOKES filaments
+  for (let s = 0; s < SPOKES; s++) addC(idx(s, 0), PAYLOAD, 1.0);
+
+  // --- Filament line mesh (coloured by tension) ---
+  const segCount = constraints.length;
+  const linePos = new Float32Array(segCount * 6);
+  const lineCol = new Float32Array(segCount * 6);
+  const lineGeo = new THREE.BufferGeometry();
+  lineGeo.setAttribute('position', new THREE.BufferAttribute(linePos, 3));
+  lineGeo.setAttribute('color', new THREE.BufferAttribute(lineCol, 3));
+  const lines = new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({
+    vertexColors: true, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false
+  }));
+  scene.add(lines);
+  const cSlack = new THREE.Color(0x16314f);
+  const cTaut = new THREE.Color(0x7ef0ff);
+
+  // --- Node point clouds ---
+  const magIndices = [], webIndices = [];
+  for (let i = 0; i < PAYLOAD; i++) (nodes[i].magnetic ? magIndices : webIndices).push(i);
+  const magArr = new Float32Array(magIndices.length * 3);
+  const webArr = new Float32Array(webIndices.length * 3);
+  const magGeo = new THREE.BufferGeometry(); magGeo.setAttribute('position', new THREE.BufferAttribute(magArr, 3));
+  const webGeo = new THREE.BufferGeometry(); webGeo.setAttribute('position', new THREE.BufferAttribute(webArr, 3));
+  scene.add(new THREE.Points(magGeo, new THREE.PointsMaterial({ color: 0xff7edb, size: 0.22, sizeAttenuation: true, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false })));
+  scene.add(new THREE.Points(webGeo, new THREE.PointsMaterial({ color: 0x5a86b8, size: 0.1, sizeAttenuation: true, transparent: true, opacity: 0.55, depthWrite: false })));
+
+  // --- Field emitter (external electromagnet) ---
+  const emitter = new THREE.Group();
+  const coilMat = new THREE.MeshStandardMaterial({ color: 0xffd27e, emissive: 0xff9a3c, emissiveIntensity: 1.4, metalness: 0.6, roughness: 0.3 });
+  const coil = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.12, 12, 32), coilMat); emitter.add(coil);
+  const coil2 = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.07, 10, 28), coilMat); coil2.rotation.x = Math.PI / 2; emitter.add(coil2);
+  const eLight = new THREE.PointLight(0xffb45a, 2.2, 24, 2); emitter.add(eLight);
+  emitter.position.set(0, yTop + 2.6, 0);
+  scene.add(emitter);
+
+  // --- Payload meshes ---
+  const orb = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(0.72, 0),
+    new THREE.MeshPhysicalMaterial({ color: 0x9fe8ff, metalness: 0.1, roughness: 0.06, transmission: 0.6, thickness: 1.2, emissive: 0x2a6a9a, emissiveIntensity: 0.45, clearcoat: 1.0, ior: 1.4 })
+  );
+  orb.add(new THREE.LineSegments(new THREE.WireframeGeometry(orb.geometry), new THREE.LineBasicMaterial({ color: 0x7ef0ff, transparent: true, opacity: 0.5 })));
+  scene.add(orb);
+
+  function makeHuman() {
+    const g = new THREE.Group();
+    const suit = new THREE.MeshPhysicalMaterial({ color: 0x7eb8ff, metalness: 0.25, roughness: 0.35, emissive: 0x16345e, emissiveIntensity: 0.6, clearcoat: 0.6 });
+    const skin = new THREE.MeshStandardMaterial({ color: 0x2a4a6a, metalness: 0.3, roughness: 0.5, emissive: 0x0a1a30, emissiveIntensity: 0.4 });
+    g.add(new THREE.Mesh(new THREE.CapsuleGeometry(0.26, 0.66, 6, 12), suit));
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 18, 18), skin); head.position.y = 0.72; g.add(head);
+    for (const s of [-1, 1]) {
+      const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.085, 0.58, 5, 9), suit);
+      arm.position.set(s * 0.34, 0.34, 0); arm.rotation.z = s * 1.15; g.add(arm);
+      const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.66, 5, 9), suit);
+      leg.position.set(s * 0.14, -0.78, 0); leg.rotation.z = s * 0.1; g.add(leg);
+    }
+    g.scale.setScalar(0.92); g.visible = false;
+    return g;
+  }
+  const human = makeHuman(); scene.add(human);
+
+  // --- State / UI ---
+  let mode = 'telekinesis', fieldOn = true, fieldStrength = 0.6;
+  const G = new THREE.Vector3(0, -13, 0);
+  const MAGK = 78;
+
+  document.querySelectorAll('.sim-btn[data-mode]').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.sim-btn[data-mode]').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    mode = b.dataset.mode;
+    const flying = mode === 'flight';
+    orb.visible = !flying; human.visible = flying;
+  }));
+  const powerBtn = document.getElementById('sim-power');
+  powerBtn.classList.add('active');
+  powerBtn.addEventListener('click', () => {
+    fieldOn = !fieldOn;
+    powerBtn.textContent = 'Field: ' + (fieldOn ? 'On' : 'Off');
+    powerBtn.classList.toggle('active', fieldOn);
+  });
+  const strengthEl = document.getElementById('sim-strength');
+  strengthEl.addEventListener('input', () => { fieldStrength = strengthEl.value / 100; });
+
+  // --- Physics: Verlet integration + Gauss-Seidel constraint relaxation (PBD) ---
+  const tmp = new THREE.Vector3(), dir = new THREE.Vector3(), vel = new THREE.Vector3(), delta = new THREE.Vector3();
+  const SUBSTEPS = 2, ITER = 14, DAMP = 0.985;
+
+  function integrate(dt) {
+    const dt2 = dt * dt;
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      if (n.pinned) continue;
+      tmp.copy(G);
+      if (fieldOn && n.magnetic) {
+        dir.subVectors(emitter.position, n.pos);
+        const dist = dir.length() + 0.001;
+        dir.multiplyScalar(1 / dist);
+        // force ~ field gradient: stronger nearer the emitter
+        tmp.addScaledVector(dir, (fieldStrength * MAGK) / (1 + dist * 0.18));
+      }
+      vel.subVectors(n.pos, n.prev).multiplyScalar(DAMP);
+      n.prev.copy(n.pos);
+      n.pos.add(vel).addScaledVector(tmp, dt2);
+    }
+  }
+  function solve() {
+    for (let it = 0; it < ITER; it++) {
+      for (let c = 0; c < constraints.length; c++) {
+        const con = constraints[c], A = nodes[con.a], B = nodes[con.b];
+        const wsum = A.invMass + B.invMass; if (wsum === 0) continue;
+        delta.subVectors(B.pos, A.pos);
+        const d = delta.length() || 1e-6;
+        delta.multiplyScalar((d - con.rest) / d);
+        A.pos.addScaledVector(delta, A.invMass / wsum);
+        B.pos.addScaledVector(delta, -B.invMass / wsum);
+      }
+      for (let i = 0; i < PAYLOAD; i++) if (nodes[i].pinned) nodes[i].pos.copy(nodes[i].anchor);
+    }
+  }
+
+  function updateVisuals() {
+    for (let c = 0; c < constraints.length; c++) {
+      const con = constraints[c], A = nodes[con.a].pos, B = nodes[con.b].pos, o = c * 6;
+      linePos[o] = A.x; linePos[o + 1] = A.y; linePos[o + 2] = A.z;
+      linePos[o + 3] = B.x; linePos[o + 4] = B.y; linePos[o + 5] = B.z;
+      const strain = THREE.MathUtils.clamp((A.distanceTo(B) - con.rest) / con.rest * 6, 0, 1);
+      const r = cSlack.r + (cTaut.r - cSlack.r) * strain;
+      const g = cSlack.g + (cTaut.g - cSlack.g) * strain;
+      const bl = cSlack.b + (cTaut.b - cSlack.b) * strain;
+      lineCol[o] = r; lineCol[o + 1] = g; lineCol[o + 2] = bl;
+      lineCol[o + 3] = r; lineCol[o + 4] = g; lineCol[o + 5] = bl;
+    }
+    lineGeo.attributes.position.needsUpdate = true;
+    lineGeo.attributes.color.needsUpdate = true;
+    for (let i = 0; i < magIndices.length; i++) { const p = nodes[magIndices[i]].pos; magArr[i*3]=p.x; magArr[i*3+1]=p.y; magArr[i*3+2]=p.z; }
+    for (let i = 0; i < webIndices.length; i++) { const p = nodes[webIndices[i]].pos; webArr[i*3]=p.x; webArr[i*3+1]=p.y; webArr[i*3+2]=p.z; }
+    magGeo.attributes.position.needsUpdate = true;
+    webGeo.attributes.position.needsUpdate = true;
+    orb.position.copy(payload.pos);
+    human.position.copy(payload.pos);
+  }
+
+  const clock = new THREE.Clock();
+  let t = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+    t += Math.min(clock.getDelta(), 0.05);
+    // auto-drive emitter so the demo is alive without input
+    if (mode === 'telekinesis') {
+      emitter.position.set(Math.sin(t * 0.5) * 3.4, yTop + 2.4 + Math.sin(t * 0.8) * 0.6, Math.cos(t * 0.37) * 3.4);
+    } else {
+      emitter.position.set(Math.sin(t * 0.6) * 0.8, yTop + 2.0 + Math.sin(t * 0.5) * 0.5, Math.cos(t * 0.6) * 0.8);
+    }
+    coil.rotation.z += 0.02; coil.rotation.x += 0.01;
+    eLight.intensity = (fieldOn ? 2.2 : 0.2) * (0.82 + Math.sin(t * 4) * 0.18);
+
+    const sub = (1 / 60) / SUBSTEPS;
+    for (let s = 0; s < SUBSTEPS; s++) { integrate(sub); solve(); }
+
+    orb.rotation.y += 0.006; orb.rotation.x += 0.0025;
+    human.rotation.y = Math.sin(t * 0.3) * 0.4;
+    human.rotation.z = Math.sin(t * 0.6) * 0.08;
+
+    updateVisuals();
+    controls.update();
+    renderer.render(scene, camera);
+  }
+
+  function resize() {
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    if (w === 0 || h === 0) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(wrap);
+  resize();
+  animate();
+}
 </script>
 
 </body>

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hobman Industries — Flight + Telekinesis Demo</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="./styles.css?v=2" />
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.module.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="game" aria-label="Playable third-person flight and telekinesis demo"></canvas>
+
+  <div id="hud">
+    <div class="brand"><span>HOBMAN</span> INDUSTRIES</div>
+    <div class="subtitle">BLIMP LIFT / VECTOR-DRONE PULLEY SIM</div>
+    <div id="status">Click to capture mouse. WASD move, Space/Ctrl vertical, RMB or E grab, LMB pulse/throw.</div>
+    <div class="meter"><span>Lift</span><b id="liftBar"></b></div>
+    <div class="meter"><span>Field</span><b id="fieldBar"></b></div>
+  </div>
+
+  <div id="reticle">◇</div>
+
+  <div id="help">
+    <b>Playable controls</b><br />
+    Mouse: look around<br />
+    W A S D: horizontal flight<br />
+    Space / Left Ctrl: ascend / descend<br />
+    Shift: boost<br />
+    E or Right Mouse: three-anchor telekinetic grab/release nearest highlighted object<br />
+    Mouse wheel: reel grabbed object in / out<br />
+    Left Mouse: impulse / throw grabbed object<br />
+    Vector drones: pulley points beneath the load-bearing blimps<br />
+    F: test automatic helium-bladder + parachute fall arrest<br />
+    I: invert mouse look &middot; R: reset objects
+  </div>
+
+  <div id="mission">
+    Hook blue cargo to the three-point pulley web and guide it onto the glowing pads. The blimps bear the load; drones steer its vectors.
+  </div>
+
+  <div id="touchControls" aria-label="Touch flight controls">
+    <div class="touch-stick" id="touchStick" aria-label="Flight direction">
+      <span class="stick-ring"></span><span class="stick-knob" id="stickKnob"></span>
+    </div>
+    <div class="touch-actions">
+      <button type="button" data-hold="Space" aria-label="Ascend">UP</button>
+      <button type="button" data-press="KeyE" aria-label="Hook or release cargo">HOOK</button>
+      <button type="button" data-hold="ControlLeft" aria-label="Descend">DOWN</button>
+      <button type="button" data-press="TouchPulse" aria-label="Pulse or throw cargo">PULSE</button>
+      <button type="button" data-hold="ShiftLeft" class="touch-wide" aria-label="Boost">BOOST</button>
+      <button type="button" data-press="KeyF" class="touch-wide" aria-label="Test fall arrest">SAFETY</button>
+    </div>
+    <div class="touch-look-hint">Drag here to look</div>
+  </div>
+
+  <script type="module" src="./main.js?v=18"></script>
+</body>
+</html>

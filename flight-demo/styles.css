@@ -1,0 +1,168 @@
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #071019;
+  color: #c8d6e5;
+  font-family: Rajdhani, "Segoe UI", system-ui, sans-serif;
+}
+
+#game {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  background: radial-gradient(circle at 50% 40%, #10243b, #071019 70%);
+  cursor: crosshair;
+}
+
+#hud {
+  position: fixed;
+  left: 22px;
+  top: 18px;
+  width: min(430px, calc(100vw - 44px));
+  z-index: 2;
+  pointer-events: none;
+  text-shadow: 0 0 16px rgba(126,184,255,.45);
+}
+
+.brand {
+  font-family: Orbitron, Rajdhani, monospace;
+  letter-spacing: .24em;
+  font-weight: 800;
+  color: #e8f0ff;
+  font-size: 22px;
+}
+.brand span { color: #7eb8ff; }
+.subtitle {
+  color: #6f94ba;
+  letter-spacing: .22em;
+  font-size: 11px;
+  margin-top: 2px;
+  border-bottom: 1px solid rgba(126,184,255,.22);
+  padding-bottom: 10px;
+}
+#status {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #c6ddf4;
+  max-width: 560px;
+}
+.meter {
+  margin-top: 10px;
+  height: 8px;
+  border: 1px solid rgba(126,184,255,.25);
+  border-radius: 999px;
+  background: rgba(126,184,255,.06);
+  overflow: hidden;
+  position: relative;
+}
+.meter span {
+  position: absolute;
+  top: -16px;
+  font-size: 11px;
+  color: #89b8e7;
+  letter-spacing: .18em;
+}
+.meter b {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: left;
+  background: linear-gradient(90deg, #235a91, #7eb8ff, #c7e8ff);
+  box-shadow: 0 0 22px rgba(126,184,255,.9);
+}
+
+#reticle {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #d9f2ff;
+  font-size: 28px;
+  line-height: 1;
+  z-index: 3;
+  opacity: .55;
+  text-shadow: 0 0 18px #7eb8ff, 0 0 3px #fff;
+  pointer-events: none;
+}
+
+#help, #mission {
+  position: fixed;
+  z-index: 2;
+  right: 20px;
+  background: rgba(7,16,25,.72);
+  border: 1px solid rgba(126,184,255,.22);
+  box-shadow: 0 0 32px rgba(0,20,50,.45), inset 0 0 24px rgba(126,184,255,.04);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+  color: #c2d6e8;
+  padding: 14px 16px;
+  width: min(340px, calc(100vw - 40px));
+  font-size: 14px;
+  line-height: 1.45;
+}
+#help { bottom: 20px; transition: opacity .25s ease, transform .25s ease; }
+#help.load-active { opacity: 0; transform: translateX(24px); }
+#mission { top: 20px; color: #aedaff; }
+#help b { color: #7eb8ff; letter-spacing: .08em; }
+
+#touchControls { display: none; }
+
+@media (pointer: coarse), (max-width: 900px) {
+  #game { cursor: default; touch-action: none; }
+  #help { display: none; }
+  #reticle { font-size: 22px; }
+  #touchControls { display: block; position: fixed; inset: 0; z-index: 5; pointer-events: none; }
+  .touch-stick {
+    position: absolute; left: max(18px, env(safe-area-inset-left)); bottom: max(20px, env(safe-area-inset-bottom));
+    width: 126px; height: 126px; pointer-events: auto; touch-action: none;
+  }
+  .stick-ring, .stick-knob { position: absolute; border-radius: 50%; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  .stick-ring { width: 116px; height: 116px; border: 1px solid rgba(126,184,255,.5); background: rgba(7,16,25,.38); box-shadow: inset 0 0 24px rgba(126,184,255,.08); }
+  .stick-knob { width: 48px; height: 48px; border: 1px solid rgba(180,225,255,.8); background: rgba(70,137,205,.62); box-shadow: 0 0 20px rgba(126,184,255,.45); }
+  .touch-actions {
+    position: absolute; right: max(16px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom));
+    width: 176px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; pointer-events: auto;
+  }
+  .touch-actions button {
+    min-height: 44px; border: 1px solid rgba(126,184,255,.48); border-radius: 11px;
+    color: #d8eeff; background: rgba(7,16,25,.68); font: 700 11px/1 Orbitron, Rajdhani, sans-serif;
+    letter-spacing: .08em; touch-action: none; -webkit-tap-highlight-color: transparent;
+  }
+  .touch-actions button.active { background: rgba(75,151,225,.7); box-shadow: 0 0 18px rgba(126,184,255,.55); }
+  .touch-look-hint {
+    position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: rgba(170,216,255,.55);
+    font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  }
+  #mission { top: 14px; right: 14px; bottom: auto; width: min(300px, 42vw); padding: 10px 12px; font-size: 12px; }
+  #hud { left: max(14px, env(safe-area-inset-left)); top: max(12px, env(safe-area-inset-top)); width: min(360px, 48vw); }
+  .brand { font-size: 17px; }
+  .subtitle { font-size: 9px; padding-bottom: 7px; }
+  #status { margin-top: 8px; font-size: 12px; }
+  .meter { margin-top: 7px; height: 6px; }
+}
+
+@media (max-width: 760px) {
+  #help { display: none; }
+  #mission { top: auto; bottom: calc(160px + env(safe-area-inset-bottom)); right: 12px; left: 12px; width: auto; font-size: 11px; padding: 8px 10px; }
+  #hud { width: calc(100vw - 28px); }
+  .brand { font-size: 15px; }
+  #status { max-width: 58vw; }
+  .touch-stick { width: 108px; height: 108px; }
+  .stick-ring { width: 98px; height: 98px; }
+  .stick-knob { width: 42px; height: 42px; }
+  .touch-actions { width: 148px; gap: 6px; }
+  .touch-actions button { min-height: 40px; font-size: 9px; }
+  .touch-look-hint { display: none; }
+}
+
+@media (max-height: 540px) and (pointer: coarse) {
+  #mission { display: none; }
+  #status { font-size: 11px; max-width: 45vw; }
+  .meter { display: none; }
+  .touch-stick { width: 96px; height: 96px; }
+  .stick-ring { width: 88px; height: 88px; }
+  .touch-actions { width: 142px; }
+  .touch-actions button { min-height: 36px; }
+}
