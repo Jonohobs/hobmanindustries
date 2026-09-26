@@ -6,7 +6,7 @@ const liftBar = document.getElementById('liftBar');
 const fieldBar = document.getElementById('fieldBar');
 const helpEl = document.getElementById('help');
 if (matchMedia('(pointer: coarse)').matches) {
-  statusEl.textContent = 'Touch: left stick flies, drag right side to look, use UP/DOWN, HOOK, PULSE, BOOST and SAFETY.';
+    statusEl.textContent = 'Left stick flies; drag right to look. LIFT grabs, PULSE throws, HOVER brakes.';
 }
 
 const TAU = Math.PI * 2;
@@ -19,6 +19,26 @@ const CARRIER_SPREAD = 4.6;
 const CARRIER_ABOVE_AVATAR = 10;
 const CARRIER_ROOF_CLEARANCE = 3.2;
 const CHASE_DISTANCE = 8.6;
+// Reproducible city layout and grouped motion tuning; units are illustrative.
+const seed = Number(new URLSearchParams(location.search).get('seed') || 260926) >>> 0;
+let randomState = seed;
+function random() { randomState = (1664525 * randomState + 1013904223) >>> 0; return randomState / 4294967296; }
+const motion = { panSpeed: 12, heroSpeed: 21, boost: 1.7, response: 2.8, brake: 7, maxHeight: 62, radius: 115 };
+const experience = { style: 'pan', reveal: false };
+const telemetry = document.getElementById('telemetry');
+const mechanismNote = document.getElementById('mechanismNote');
+function syncExperience() {
+  document.getElementById('flightStyle').textContent = `Flight: ${experience.style === 'pan' ? 'Peter Pan' : 'Superman'}`;
+  document.getElementById('revealWeb').setAttribute('aria-pressed', String(experience.reveal));
+  document.getElementById('revealWeb').textContent = experience.reveal ? 'Hide mechanism' : 'Reveal mechanism';
+  mechanismNote.textContent = experience.reveal
+    ? 'Illustrative load path: carriers → steering nodes → tensioned filaments → harness / object. Brightness shows relative load, not measured force.'
+    : 'Hover, climb, then soar. Reveal the mechanism to see the hidden load path.';
+}
+document.getElementById('flightStyle').onclick = () => { experience.style = experience.style === 'pan' ? 'hero' : 'pan'; syncExperience(); };
+document.getElementById('revealWeb').onclick = () => { experience.reveal = !experience.reveal; syncExperience(); };
+document.getElementById('restart').onclick = () => pressed.add('KeyR');
+syncExperience();
 
 // ---------- renderer / scene ----------
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -64,7 +84,7 @@ scene.add(groundPlane);
 {
   const n = 500, pos = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
-    const a = Math.random() * TAU, r = 150 + Math.random() * 120, y = 25 + Math.random() * 140;
+    const a = random() * TAU, r = 150 + random() * 120, y = 25 + random() * 140;
     pos.set([Math.cos(a) * r, y, Math.sin(a) * r], i * 3);
   }
   const g = new THREE.BufferGeometry();
@@ -76,7 +96,7 @@ scene.add(groundPlane);
 const towers = [];
 for (let i = 0; i < 32; i++) {
   const ring = 30 + (i % 8) * 9, a = (i * 2.399) % TAU;
-  const h = 6 + Math.random() * 18, w = 1.4 + Math.random() * 2.6;
+  const h = 6 + random() * 18, w = 1.4 + random() * 2.6;
   const x = Math.cos(a) * ring, z = Math.sin(a) * ring + 22;
   const geo = new THREE.BoxGeometry(w * 2, h, w * 2);
   const mesh = new THREE.Mesh(geo, towerMat);
@@ -91,7 +111,7 @@ for (let i = 0; i < 32; i++) {
     scene.add(ant);
     const tip = new THREE.Mesh(new THREE.SphereGeometry(0.16), new THREE.MeshBasicMaterial({ color: 0xff5d7a }));
     tip.position.set(x, h + 3, z);
-    tip.userData.blink = Math.random() * TAU;
+    tip.userData.blink = random() * TAU;
     scene.add(tip);
     towers.push({ blinkTip: tip });
   }
@@ -440,13 +460,16 @@ function cube(name, x, y, z, hex, scale = 1) {
   hook.rotation.x = Math.PI / 2;
   mesh.add(hook);
   scene.add(mesh);
-  return { name, mesh, hook, vel: V(), spin: (Math.random() - 0.5) * 1.6, r, held: false, scored: false };
+  return { name, mesh, hook, vel: V(), spin: (random() - 0.5) * 1.6, r, held: false, scored: false };
 }
 function objectHookPoint(object) {
   return object.hook.getWorldPosition(V());
 }
 function resetObjects() {
-  for (const o of objects) scene.remove(o.mesh);
+  for (const o of objects) {
+    scene.remove(o.mesh);
+    o.mesh.traverse(node => { node.geometry?.dispose(); node.material?.dispose(); });
+  }
   objects = [
     cube('CARGO-01', -13, 3, 4, 0x7eb8ff), cube('CARGO-02', 3, 2.5, 10, 0x9ee6ff), cube('CARGO-03', 14, 3.8, 2, 0x79a8ff),
     cube('DEBRIS-A', -8, 1.8, 22, 0xb6c4d6, 0.7), cube('DEBRIS-B', 9, 1.6, 20, 0xb6c4d6, 0.55), cube('DEBRIS-C', 0, 1.4, 5, 0xb6c4d6, 0.45)
@@ -502,14 +525,19 @@ const padStrings = padPositions.map(() => makeString()); // ambient web flavor
 
 // ---------- input ----------
 const keys = new Set(), pressed = new Set();
-addEventListener('keydown', e => { keys.add(e.code); pressed.add(e.code); if (['Space', 'ArrowUp', 'ArrowDown'].includes(e.code)) e.preventDefault(); });
+addEventListener('keydown', e => {
+  if (e.target.closest?.('input, select, textarea')) return;
+  if (['Space', 'Enter'].includes(e.code) && e.target.closest?.('button, a')) return;
+  keys.add(e.code); if (!e.repeat) pressed.add(e.code);
+  if (['Space', 'ArrowUp', 'ArrowDown'].includes(e.code)) e.preventDefault();
+});
 addEventListener('keyup', e => keys.delete(e.code));
 
 let mouseLocked = false, mouseDownL = false, mouseDownR = false;
 canvas.addEventListener('pointerdown', e => { if (e.pointerType === 'mouse') canvas.requestPointerLock?.(); });
 document.addEventListener('pointerlockchange', () => mouseLocked = document.pointerLockElement === canvas);
 canvas.addEventListener('contextmenu', e => e.preventDefault());
-addEventListener('mousedown', e => { if (e.button === 0) mouseDownL = true; if (e.button === 2) mouseDownR = true; });
+canvas.addEventListener('mousedown', e => { if (!mouseLocked) return; if (e.button === 0) mouseDownL = true; if (e.button === 2) { mouseDownR = true; pressed.add('KeyE'); } });
 addEventListener('mouseup', e => { if (e.button === 0) mouseDownL = false; if (e.button === 2) mouseDownR = false; });
 
 let invertY = localStorage.getItem('hobmanInvertY') === '1';
@@ -520,15 +548,21 @@ addEventListener('mousemove', e => {
   player.pitch = clamp(player.pitch + dy * 0.0018, -1.05, 0.72);
 });
 addEventListener('wheel', e => {
-  if (player.grabbed) {
-    player.hoistDrop = clamp(player.hoistDrop + Math.sign(e.deltaY) * 0.8, 7, 32);
-  } else {
-    player.grabDistance = clamp(player.grabDistance + Math.sign(e.deltaY) * 0.7, 3, 16);
-  }
+  player.grabDistance = clamp(player.grabDistance + Math.sign(e.deltaY) * 0.7, 3, 16);
 }, { passive: true });
 
 const touchMove = { x: 0, y: 0, pointerId: null };
 const touchLook = { x: 0, y: 0, pointerId: null };
+function clearInput() {
+  keys.clear(); pressed.clear(); mouseDownL = mouseDownR = false;
+  touchMove.x = touchMove.y = 0; touchMove.pointerId = touchLook.pointerId = null;
+  document.querySelectorAll('.touch-actions .active').forEach(button => button.classList.remove('active'));
+  const knob = document.getElementById('stickKnob');
+  if (knob) knob.style.transform = 'translate(-50%, -50%)';
+}
+addEventListener('blur', clearInput);
+document.addEventListener('visibilitychange', () => { if (document.hidden) clearInput(); });
+document.addEventListener('pointerlockchange', () => { if (!document.pointerLockElement) clearInput(); });
 const touchStick = document.getElementById('touchStick');
 const stickKnob = document.getElementById('stickKnob');
 function updateTouchStick(e) {
@@ -635,7 +669,7 @@ function updateRooftopDrones(dt, now) {
     const targetCenter = targets.reduce((sum, target) => sum.add(target), V()).multiplyScalar(1 / targets.length);
     const steeringOffset = desiredLoad.sub(targetCenter);
     steeringOffset.y = 0;
-    if (steeringOffset.length() > 6.5) steeringOffset.setLength(6.5);
+    if (steeringOffset.length() > 18) steeringOffset.setLength(18);
     targets.forEach(target => target.add(steeringOffset));
   }
   rooftopDrones.forEach((drone, i) => {
@@ -645,7 +679,7 @@ function updateRooftopDrones(dt, now) {
       drone.position.copy(target);
       drone.userData.initialized = true;
     } else {
-      drone.position.lerp(target, 1 - Math.pow(0.45, dt));
+      drone.position.lerp(target, 1 - Math.pow(0.015, dt));
     }
     drone.rotation.y += dt * (0.65 + i * 0.12);
     drone.userData.settled = drone.position.distanceTo(target) < 0.7;
@@ -680,6 +714,10 @@ function nearestTeleTarget() {
 
 // ---------- update ----------
 function update(dt, now) {
+  if (pressed.has('KeyP')) document.getElementById('flightStyle').click();
+  if (pressed.has('KeyV')) document.getElementById('revealWeb').click();
+  if (keys.has('KeyQ')) player.grabDistance = Math.max(3, player.grabDistance - dt * 5);
+  if (keys.has('KeyC')) player.grabDistance = Math.min(16, player.grabDistance + dt * 5);
   // blimps drift + bob
   for (const b of blimps) {
     const o = b.userData.orbit;
@@ -707,7 +745,7 @@ function update(dt, now) {
   updateRooftopDrones(dt, now);
 
   // flight
-  const f = flatForward(), r = right();
+  const f = experience.style === 'hero' ? forward() : flatForward(), r = right();
   let acc = V();
   if (keys.has('KeyW')) acc.add(f);
   if (keys.has('KeyS')) acc.sub(f);
@@ -715,14 +753,23 @@ function update(dt, now) {
   if (keys.has('KeyA')) acc.sub(r);
   acc.addScaledVector(r, touchMove.x);
   acc.addScaledVector(f, -touchMove.y);
-  const boost = keys.has('ShiftLeft') || keys.has('ShiftRight') ? 1.65 : 1;
-  if (acc.lengthSq() > 0) acc.normalize().multiplyScalar(28 * boost);
-  if (keys.has('Space')) acc.y += 26;
-  if (keys.has('ControlLeft') || keys.has('ControlRight')) acc.y -= 24;
-  acc.y += (5.3 - player.pos.y) * 0.55; // filament lift equilibrium
-  player.vel.multiplyScalar(Math.pow(0.12, dt)).addScaledVector(acc, dt);
+  const boost = keys.has('ShiftLeft') || keys.has('ShiftRight') ? motion.boost : 1;
+  if (keys.has('Space')) acc.y += 1;
+  if (keys.has('ControlLeft') || keys.has('ControlRight')) acc.y -= 1;
+  const braking = keys.has('KeyX');
+  const inputAmount = Math.min(1, acc.length());
+  if (inputAmount > 0) acc.normalize().multiplyScalar(inputAmount * (experience.style === 'hero' ? motion.heroSpeed : motion.panSpeed) * boost);
+  if (braking) acc.set(0, 0, 0);
+  // Velocity response gives a gentle takeoff and settles to a hover at any height.
+  player.vel.lerp(acc, 1 - Math.exp(-(braking ? motion.brake : motion.response) * dt));
   player.pos.addScaledVector(player.vel, dt);
-  player.pos.y = clamp(player.pos.y, 1.5, 36);
+  player.pos.y = clamp(player.pos.y, 1.5, motion.maxHeight);
+  if ((player.pos.y === 1.5 && player.vel.y < 0) || (player.pos.y === motion.maxHeight && player.vel.y > 0)) player.vel.y = 0;
+  const radial = V(player.pos.x, 0, player.pos.z);
+  if (radial.length() > motion.radius) {
+    radial.setLength(motion.radius); player.pos.x = radial.x; player.pos.z = radial.z;
+    const normal = radial.normalize(); player.vel.addScaledVector(normal, -Math.max(0, player.vel.dot(normal)));
+  }
   const hitBuilding = resolveTowerCollision(player.pos, player.vel, PLAYER_RADIUS, PLAYER_HALF_HEIGHT);
   if (hitBuilding && player.vel.lengthSq() > 9) player.vel.multiplyScalar(0.86);
   const surfaceClearance = player.pos.y - supportSurfaceHeight(player.pos) - PLAYER_HALF_HEIGHT;
@@ -737,9 +784,10 @@ function update(dt, now) {
     player.vel.y = -18;
     statusEl.textContent = 'Fall detected: emergency lift system armed.';
   }
-  const fallSeverity = clamp((-player.vel.y - 3.5) / 11, 0, 1);
+  const commandedDescent = acc.y < -1;
+  const fallSeverity = commandedDescent ? 0 : clamp((-player.vel.y - 3.5) / 11, 0, 1);
   const heliumTarget = fallSeverity > 0.08 ? clamp(fallSeverity * 1.45, 0, 1) : 0;
-  const chuteTarget = player.vel.y < -9 || (surfaceClearance < 7 && player.vel.y < -5) ? 1 : 0;
+  const chuteTarget = !commandedDescent && (player.vel.y < -9 || (surfaceClearance < 7 && player.vel.y < -5)) ? 1 : 0;
   safetySystem.helium = lerp(safetySystem.helium, heliumTarget, 1 - Math.pow(heliumTarget > safetySystem.helium ? 0.00008 : 0.12, dt));
   safetySystem.chute = lerp(safetySystem.chute, chuteTarget, 1 - Math.pow(chuteTarget > safetySystem.chute ? 0.000001 : 0.08, dt));
   const nextSafetyPhase = safetySystem.chute > 0.18 ? 'parachute' : (safetySystem.helium > 0.08 ? 'helium' : 'stowed');
@@ -767,7 +815,7 @@ function update(dt, now) {
   const canopyTarget = player.pos.clone().add(V(0, 4.8 + safetySystem.chute * 0.5, 0));
   parachute.position.lerp(canopyTarget, 1 - Math.pow(0.0005, dt));
 
-  droneAssistStrength = Math.max(descentRisk, proximityRisk, hitBuilding ? 0.72 : 0);
+  droneAssistStrength = Math.max(commandedDescent ? 0 : descentRisk, proximityRisk, hitBuilding ? 0.72 : 0);
   if (droneAssistStrength > 0.01) {
     const assistTarget = rooftopDrones.reduce((sum, drone) => sum.add(fieldAnchorPoint(drone)), V())
       .multiplyScalar(1 / rooftopDrones.length);
@@ -780,7 +828,7 @@ function update(dt, now) {
   // string tension follows how hard the web is working
   player.load = lerp(player.load, clamp(0.18 + Math.abs(acc.y) / 45 + player.vel.length() / 34 + (boost > 1 ? 0.2 : 0), 0, 1), 1 - Math.pow(0.002, dt));
 
-  const swingTarget = player.vel.clone().setY(0).multiplyScalar(-0.13);
+  const swingTarget = player.vel.clone().setY(0).multiplyScalar(-0.025);
   swingTarget.y = -clamp(Math.max(0, -player.vel.y) * 0.10 + swingTarget.length() * 0.07, 0, 2.3);
   suspensionSwing.lerp(swingTarget, 1 - Math.pow(0.08, dt));
   avatar.position.copy(player.pos).add(suspensionSwing);
@@ -788,20 +836,22 @@ function update(dt, now) {
   const horizontalSpeed = Math.hypot(player.vel.x, player.vel.z);
   const flightAmount = clamp(horizontalSpeed / 18 + Math.max(0, player.vel.y) / 30, 0, 1);
   const poseResponse = 1 - Math.pow(0.002, dt);
-  flightRig.rotation.x = lerp(flightRig.rotation.x, lerp(0.72, 1.18, flightAmount), poseResponse);
-  flightRig.rotation.z = lerp(flightRig.rotation.z, clamp(-player.vel.dot(right()) / 45, -0.22, 0.22), poseResponse);
-  limbs.leftArm.rotation.z = lerp(limbs.leftArm.rotation.z, -1.30 - flightAmount * 0.18, poseResponse);
-  limbs.rightArm.rotation.z = lerp(limbs.rightArm.rotation.z, 1.30 + flightAmount * 0.18, poseResponse);
-  limbs.leftArm.rotation.x = lerp(limbs.leftArm.rotation.x, -0.20 - flightAmount * 0.35, poseResponse);
-  limbs.rightArm.rotation.x = lerp(limbs.rightArm.rotation.x, -0.20 - flightAmount * 0.35, poseResponse);
+  const hero = experience.style === 'hero';
+  const travelPitch = Math.atan2(player.vel.y, Math.max(0.1, horizontalSpeed));
+  flightRig.rotation.x = lerp(flightRig.rotation.x, lerp(0.10, Math.PI / 2 - travelPitch, flightAmount), poseResponse);
+  flightRig.rotation.z = lerp(flightRig.rotation.z, clamp(-player.vel.dot(right()) / 30, -0.5, 0.5), poseResponse);
+  limbs.leftArm.rotation.z = lerp(limbs.leftArm.rotation.z, hero ? -0.12 : -1.35, poseResponse);
+  limbs.rightArm.rotation.z = lerp(limbs.rightArm.rotation.z, hero ? 0.12 : 1.35, poseResponse);
+  limbs.leftArm.rotation.x = lerp(limbs.leftArm.rotation.x, hero ? -Math.PI * flightAmount : -0.28, poseResponse);
+  limbs.rightArm.rotation.x = lerp(limbs.rightArm.rotation.x, player.grabbed ? -1.8 : (hero ? -Math.PI * flightAmount : -0.28), poseResponse);
   const stride = Math.sin(now / 260) * 0.12 * flightAmount;
-  limbs.leftLeg.rotation.x = lerp(limbs.leftLeg.rotation.x, 0.58 + flightAmount * 0.52 + stride, poseResponse);
-  limbs.rightLeg.rotation.x = lerp(limbs.rightLeg.rotation.x, 0.42 + flightAmount * 0.64 - stride, poseResponse);
+  limbs.leftLeg.rotation.x = lerp(limbs.leftLeg.rotation.x, (hero ? 0.06 : 0.32) + stride, poseResponse);
+  limbs.rightLeg.rotation.x = lerp(limbs.rightLeg.rotation.x, (hero ? 0.04 : 0.16) - stride, poseResponse);
   limbs.leftLeg.rotation.z = lerp(limbs.leftLeg.rotation.z, 0.18, poseResponse);
   limbs.rightLeg.rotation.z = lerp(limbs.rightLeg.rotation.z, -0.18, poseResponse);
 
   // grab / release
-  const grabPressed = pressed.has('KeyE') || (mouseDownR && !player.grabbed);
+  const grabPressed = pressed.has('KeyE');
   if (grabPressed && !player.grabbed) {
     const t = nearestTeleTarget();
     if (t && player.field > 0.12) {
@@ -811,6 +861,7 @@ function update(dt, now) {
         .multiplyScalar(1 / rooftopDrones.length);
       player.hoistDrop = clamp(webCenter.y - objectHookPoint(t).y, 7, 32);
       t.held = true;
+      player.grabDistance = clamp(player.pos.distanceTo(t.mesh.position), 3, 16);
       statusEl.textContent = `Three-point field lock: ${t.name}. Scroll reels, LMB throws.`;
     }
   } else if (pressed.has('KeyE') && player.grabbed) {
@@ -826,14 +877,12 @@ function update(dt, now) {
     // This ensures the vector drones visibly lead and pull before the cube moves.
     const target = rooftopDrones.reduce((sum, drone) => sum.add(fieldAnchorPoint(drone)), V())
       .multiplyScalar(1 / rooftopDrones.length);
-    target.y -= player.hoistDrop;
+    const desired = player.pos.clone().addScaledVector(forward(), player.grabDistance);
+    // Steering nodes lead horizontal motion; the hoist tracks the aimed height.
+    target.y = clamp(desired.y, o.r + 0.1, target.y - 2);
+    player.hoistDrop = Math.max(2, fieldAnchorPoint(rooftopDrones[1]).y - target.y);
     const spring = target.sub(objectHookPoint(o));
-    o.vel.multiplyScalar(Math.pow(0.075, dt)).addScaledVector(spring, 6.5 * dt);
-    for (const anchor of player.fieldAnchors) {
-      const tetherPull = fieldAnchorPoint(anchor).sub(objectHookPoint(o));
-      const stretch = tetherPull.length() - player.hoistDrop * 1.15;
-      if (stretch > 0) o.vel.addScaledVector(tetherPull.normalize(), stretch * 0.9 * dt);
-    }
+    o.vel.addScaledVector(spring, 14 * dt).multiplyScalar(Math.exp(-6 * dt));
     o.mesh.rotation.y += dt * 2.5;
     player.field = clamp(player.field - dt * 0.055, 0.05, 1);
     if (mouseDownL || pressed.has('TouchPulse')) {
@@ -865,7 +914,7 @@ function update(dt, now) {
       o.vel.y = Math.abs(o.vel.y) * 0.32; o.vel.x *= 0.82; o.vel.z *= 0.82;
     }
     for (const p of padPositions) {
-      if (!o.scored && o.name.startsWith('CARGO') &&
+      if (!o.scored && !o.held && o.name.startsWith('CARGO') &&
           Math.hypot(o.mesh.position.x - p.x, o.mesh.position.z - p.z) < 2.5 && o.mesh.position.y < 2.6) {
         o.scored = true;
         o.mesh.material.color.setHex(0x7dffcf); o.mesh.material.emissive.setHex(0x7dffcf);
@@ -957,6 +1006,11 @@ function update(dt, now) {
     grabStrings.forEach(s => s.visible = false);
   }
   padStrings.forEach((s, i) => updateString(s, blimpAnchor(nearestBlimps(padPositions[i], 1)[0]), padPositions[i], 0.06));
+  // Reveal changes presentation only; the simulated load path remains the same.
+  for (const line of [...liftStrings, ...grabStrings, ...droneMooringStrings, ...droneSpanStrings, ...padStrings, carrierBridgeString]) {
+    line.material.opacity *= experience.reveal ? 1 : 0.035;
+  }
+  for (const craft of [...blimps, ...rooftopDrones, pulleyTrolley]) craft.visible = experience.reveal;
 
   // highlight
   const target2 = player.grabbed ? null : nearestTeleTarget();
@@ -973,6 +1027,10 @@ function update(dt, now) {
   }
   if (pressed.has('KeyR')) {
     resetObjects();
+    player.pos.set(0, 5.5, -14); player.vel.set(0, 0, 0);
+    player.yaw = 0.12; player.pitch = -0.18; player.field = 1;
+    player.grabDistance = 7; suspensionSwing.set(0, 0, 0);
+    safetySystem.helium = safetySystem.chute = 0; safetySystem.phase = 'stowed';
     player.grabbed = null;
     player.fieldAnchors = [];
     statusEl.textContent = 'Simulation reset.';
@@ -986,12 +1044,13 @@ function update(dt, now) {
   // chase camera
   const carrierCenter = carrierBlimps[0].position.clone().lerp(carrierBlimps[1].position, 0.5);
   const suspensionHeight = Math.max(0, carrierCenter.y - avatar.position.y);
-  const framedDistance = Math.max(CHASE_DISTANCE, suspensionHeight * 0.78);
+  const framedDistance = experience.reveal ? Math.max(CHASE_DISTANCE, suspensionHeight * 0.78) : CHASE_DISTANCE + player.vel.length() * 0.065;
   let camPos = player.pos.clone()
-    .addScaledVector(flatForward(), -framedDistance * Math.cos(player.pitch))
-    .add(V(0, 2.75 - 4.0 * Math.sin(player.pitch), 0));
+    .addScaledVector(forward(), -framedDistance)
+    .addScaledVector(right(), experience.reveal ? 0 : 3.2)
+    .add(V(0, experience.reveal ? 2.3 : 4.8, 0));
   camPos.y = Math.max(camPos.y, 1.2);
-  const carrierBlend = player.grabbed ? 0.30 : 0.42;
+  const carrierBlend = experience.reveal ? (player.grabbed ? 0.30 : 0.42) : 0;
   const cameraTarget = avatar.position.clone()
     .lerp(carrierCenter, carrierBlend)
     .addScaledVector(forward(), 2.2);
@@ -1007,21 +1066,31 @@ function update(dt, now) {
   }
   camera.position.lerp(camPos, 1 - Math.pow(0.0001, dt));
   camera.lookAt(cameraTarget);
+  camera.fov = lerp(camera.fov, 64 + clamp(player.vel.length() / 36, 0, 1) * 12, 1 - Math.exp(-3 * dt));
+  camera.updateProjectionMatrix();
+  const aim = player.grabbed || target2;
+  telemetry.textContent = `${Math.round(player.vel.length())} u/s · ${player.pos.y.toFixed(1)} u altitude · ${aim ? aim.name : 'Aim at a core'} · ${objects.filter(o => o.scored).length}/3`;
 
   const done = objects.filter(o => o.scored).length;
   if (done === 3) statusEl.textContent = 'All cargo cores secured. Free-flight sandbox unlocked — throw debris around.';
 }
 
+const diagnostics = { paused: false, time: 0 };
 let last = performance.now();
 function loop(now) {
   const dt = clamp((now - last) / 1000, 0.001, 0.05); last = now;
-  update(dt, now);
+  if (!diagnostics.paused) { diagnostics.time += dt; update(dt, diagnostics.time * 1000); }
   renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
 
 window.__hobmanDemo = {
+  experience, motion, seed, renderer, flightRig, limbs, keys, pressed, update, syncExperience, diagnostics,
+  step(seconds = 1, hz = 60) {
+    for (let i = 0; i < Math.round(seconds * hz); i++) { diagnostics.time += 1 / hz; update(1 / hz, diagnostics.time * 1000); }
+    renderer.render(scene, camera);
+  },
   player,
   avatar,
   camera,

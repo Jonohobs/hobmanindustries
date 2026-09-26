@@ -109,6 +109,20 @@ html, body {
 
 #touchControls { display: none; }
 
+#experience { position: fixed; left: 22px; top: 170px; z-index: 6; max-width: 390px; display: flex; flex-wrap: wrap; gap: 7px; }
+#experience button, #experience a { border: 1px solid #547894; border-radius: 8px; background: #0b2030ed; color: #ddf6ff; padding: 10px 12px; font: 12px system-ui; cursor: pointer; text-decoration: none; }
+#experience button[aria-pressed="true"] { background: #21536a; border-color: #a1efff; }
+#experience button:focus-visible, #experience a:focus-visible { outline: 2px solid #a1efff; outline-offset: 3px; }
+#telemetry { flex-basis: 100%; color: #9cebcf; font: 12px monospace; padding-top: 4px; }
+#mechanismNote { margin: 0; color: #b0c9dd; font-size: 12px; line-height: 1.5; background: #071019c9; padding: 8px 10px; border-radius: 8px; }
+@media (max-width: 900px) {
+  #experience { left: 14px; top: 142px; max-width: min(370px, 90vw); gap: 5px; }
+  #experience button, #experience a { padding: 9px; font-size: 11px; }
+  #mechanismNote { font-size: 11px; }
+}
+@media (max-width: 760px) { #mission { bottom: calc(205px + env(safe-area-inset-bottom)) !important; } }
+@media (max-height: 540px) { #experience { top: 104px; max-width: 330px; } #mechanismNote { display: none; } }
+
 @media (pointer: coarse), (max-width: 900px) {
   #game { cursor: default; touch-action: none; }
   #help { display: none; }

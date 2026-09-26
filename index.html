@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Hobman Industries — Patent Filing</title>
+<link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -302,6 +303,18 @@
     .flight-demo-launch b { padding-top: 2px; }
   }
 </style>
+<style>
+  .concept-intro { max-width: 800px; margin: 0 auto 28px; padding: 24px; border: 1px solid #28485e; border-radius: 16px; background: #0b1729e8; }
+  .concept-intro .eyebrow { color: #7ef0ff; font: 11px monospace; letter-spacing: .17em; text-transform: uppercase; }
+  .concept-intro h2 { font-size: clamp(28px, 5vw, 46px); line-height: 1.15; color: #e0f5ff; margin: 12px 0; }
+  .concept-intro p { color: #9fb8cf; line-height: 1.65; }
+  .concept-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 20px; }
+  .concept-steps article { border-top: 1px solid #395875; padding-top: 14px; }
+  .concept-steps b { color: #a4edee; font-size: 14px; }
+  .concept-steps p { font-size: 13px; margin: 8px 0; }
+  .concept-intro .flight-demo-launch { margin-top: 22px; }
+  @media (max-width: 600px) { .concept-intro { padding: 20px; } .concept-steps { grid-template-columns: 1fr; } }
+</style>
 </head>
 <body>
 
@@ -315,11 +328,26 @@
   </header>
 
   <!-- Primary interactive launch surface: deliberately above the patent text. -->
+  <section class="concept-intro" aria-labelledby="concept-heading">
+    <div class="eyebrow">The invisible pulley · an interactive concept</div>
+    <h2 id="concept-heading">What if the support<br>could disappear?</h2>
+    <p>Hover like Peter Pan. Stretch out and soar like Superman. Lift an object with a gesture. Explore the experience, then reveal the network that would carry the load.</p>
+    <a class="flight-demo-launch" href="./flight-demo/">
+      <span><strong>Experience flight &amp; telekinesis</strong><span>Two flight styles, remote object manipulation and a revealable filament network. Play with keyboard, mouse or touch.</span></span>
+      <b>Enter &rarr;</b>
+    </a>
+    <div class="concept-steps">
+      <article><b>01 / A network under tension</b><p>The patent proposes fine filaments stretched through a workspace. Objects attach to that network; forces travel through the filaments.</p></article>
+      <article><b>02 / Nodes redirect the force</b><p>External magnetic field gradients act on magnetically responsive nodes. Changing those forces redistributes tension to move the attached load.</p></article>
+      <article><b>03 / Movement becomes the interface</b><p>Control and sensing coordinate the network. The proposed applications include remote object manipulation and supported human flight.</p></article>
+    </div>
+    <p style="font-size:12px">These are concept visualisations. The playable scene uses simplified carrier, drone and spring behaviours to explain a load path; it does not solve the patent’s magnetic actuation, establish feasibility or model human-flight safety. The patent specification appears below.</p>
+  </section>
   <section class="sim-section" id="sim">
-    <h2>Interactive Demonstration</h2>
+    <h2>Inside the proposed mechanism</h2>
     <p class="sim-sub">The invisible pulley &mdash; a pre-tensioned filament network whose magnetically loaded nodes are pulled by an external field gradient, redistributing tension to lift a payload without visible contact.</p>
     <a class="flight-demo-launch" href="./flight-demo/">
-      <span><strong>Flight + vector-drone pulley simulator</strong><span>Fly beneath load-bearing blimps, hook cargo into the visible three-point pulley web, and test the automatic fall-arrest system. Touch controls included.</span></span>
+      <span><strong>Explore the load path in 3D</strong><span>In the flight experience, choose “Reveal mechanism” to see the carriers, steering nodes and filaments supporting the flyer and cargo.</span></span>
       <b>Launch &rarr;</b>
     </a>
     <div class="sim-wrap">
