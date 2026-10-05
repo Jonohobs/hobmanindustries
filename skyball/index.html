@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Drone Dodgeball · Tetherball Zero</title><link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
+</head>
+<body>
+  <canvas id="arena" tabindex="0" aria-label="Aerial dodgeball arena; keyboard flight controls"></canvas>
+  <div id="loading" role="status">Preparing the flight arena…</div>
+  <header>
+    <a class="brand" href="../" aria-label="Back to Hobman Industries"><span class="mark">↖</span><div>TETHERBALL <b>ZERO</b><small>BACK TO HOBMAN INDUSTRIES</small></div></a>
+    <div class="scoreboard" aria-label="Match score"><span class="team cyan">YOU</span><strong id="score0">0</strong><span class="score-divider">:</span><strong id="score1">0</strong><span class="team coral">RIVAL</span><small id="matchLabel">DRONE DODGEBALL · FIRST TO 5</small></div>
+    <div class="top-actions"><button id="cameraButton" title="V changes camera">Arena view <kbd>V</kbd></button><button id="pauseButton" aria-label="Pause match">Ⅱ</button></div>
+  </header>
+
+  <main id="welcome" class="glass">
+    <div class="eyebrow"><i></i> A NEW KIND OF AIR SPORT</div>
+    <h1>Flight.<br>Focus.<br><em>Fire.</em></h1>
+    <p>Hit your rival five times. Fly out of their way, hold to focus and catch, then release a held ball to throw.</p>
+    <div class="intro-steps"><span><b>01</b> FLY WITH THE RIG</span><span><b>02</b> HOLD TO FOCUS & CATCH</span><span><b>03</b> RELEASE TO THROW</span></div>
+    <button id="startButton" class="primary">Enter the arena <span>↗</span></button>
+    <button id="watchButton" class="text-button">Watch a computer match →</button>
+    <small class="concept-note">Playable concept prototype. EEG input and rig motion are simulated.</small>
+  </main>
+
+  <aside id="lab" class="glass">
+    <details id="labDetails">
+      <summary><span><span class="eyebrow">THE EQUIPMENT</span><b>Flight lab</b></span><span class="plus">+</span></summary>
+      <div class="lab-content">
+        <label class="select-row">Cables per player<select id="cables" aria-label="Cables per player"><option value="2">2 cables</option><option value="4" selected>4 cables</option><option value="8">8 cables</option></select></label>
+        <label class="check-row"><input id="showRig" type="checkbox" checked> Reveal cables & winches</label>
+        <label class="check-row"><input id="showField" type="checkbox"> Show catch radius</label>
+        <label class="slider-label">Intent delay <output id="latencyValue">250 ms</output><input id="latency" type="range" min="0" max="800" step="50" value="250"></label>
+        <label class="slider-label">Signal noise <output id="noiseValue">8%</output><input id="noise" type="range" min="0" max="35" step="1" value="8"></label>
+        <label class="slider-label">Drone ball speed <output id="speedValue">12 m/s</output><input id="speed" type="range" min="7" max="20" step="1" value="12"></label>
+        <label class="select-row">Match<select id="teamSize" aria-label="Match"><option value="1">1 vs 1</option><option value="2">2 vs 2 · bot teammate</option></select></label>
+        <label class="select-row">Render detail<select id="quality" aria-label="Render detail"><option value="standard">Standard</option><option value="light">Light · lower resolution</option></select></label>
+        <button id="modeButton" class="secondary">Watch computer match</button>
+        <button id="resetButton" class="secondary">Reset match <kbd>R</kbd></button>
+        <details id="advancedControls"><summary>Advanced controls <span>+</span></summary><p><kbd>Q / C</kbd> curve your airborne shot while focusing.<br><kbd>X</kbd> brake. <kbd>E</kbd> also holds focus.<br><kbd>V</kbd> camera. <kbd>R</kbd> reset. <kbd>Esc</kbd> pause.</p></details>
+        <p class="small-note">Keyboard/touch → simulated decoded intent → movement and ball control. Cable count changes the visible rig; loads and cable forces are not solved. The caged ball follows game physics. <a href="./README.md" target="_blank" rel="noopener">Concept & sources ↗</a></p>
+      </div>
+    </details>
+  </aside>
+
+  <div id="rendererNote" hidden>Canvas view · same game controls</div>
+  <div id="playerTag" class="world-tag cyan">YOU</div><div id="opponentTag" class="world-tag coral">RIVAL</div><div id="ballTag" class="world-tag">DRONE BALL</div>
+  <div id="actionGuide" role="status" aria-live="polite"><strong id="actionPrompt">Your serve · hold to focus</strong><span id="actionHint">Hold Space or mouse, then release to throw.</span></div>
+  <div id="event" role="status" aria-live="polite"></div>
+  <div id="result" class="glass" hidden><span class="eyebrow">MATCH COMPLETE</span><h2 id="resultTitle">You win.</h2><p id="resultText"></p><button id="againButton" class="primary">Fly again ↗</button></div>
+
+  <footer>
+    <div class="flight-readout glass"><span class="eyebrow">YOUR FLIGHT</span><div class="readings"><span><strong id="height">5.0</strong><small>m ALTITUDE</small></span><span><strong id="velocity">0.0</strong><small>m/s SPEED</small></span></div><div class="status-light"><i></i><span id="rigStatus">RIG CONNECTED · 4 CABLES</span></div></div>
+    <div id="controls" class="glass"><div><kbd>W A S D</kbd> fly <kbd>Shift</kbd> up <kbd>F</kbd> down</div><div><kbd>Space / mouse</kbd> hold to focus · release to throw</div><small>AUTO-LOCK chooses the nearest rival. First to five hits wins.</small></div>
+    <div class="intent-readout glass"><div class="intent-heading"><span class="eyebrow">BALL CONTROL</span><b id="focusLabel">Hold to focus</b></div><div class="meter"><div id="focusBar"></div><span class="threshold"></span></div><div class="intent-bottom"><span id="ballState">BALL IN YOUR FIELD</span><span id="runtime">WebGL</span></div></div>
+  </footer>
+
+  <div id="touchControls"><div class="stick-wrap"><div id="stick" aria-label="Drag left/right to fly; up/down changes altitude"><span id="knob"></span></div><span id="stickLabel">FLY / ALTITUDE</span></div><div class="touch-buttons"><button id="touchDepth" aria-label="Switch flight stick to forward and backward movement" aria-pressed="false">Use depth ↕</button><button id="touchThrow" aria-label="Hold to focus and catch; release a held ball to throw" aria-pressed="false">HOLD TO FOCUS</button></div></div>
+  <div id="fatal" role="alert" hidden></div>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
